@@ -191,9 +191,9 @@ int main(int argc,char *argv[])
   x264defaultParam.rc.i_rc_method = X264_RC_CRF;
   x264defaultParam.rc.f_rf_constant = 20;
   //For streaming:
-  x264defaultParam.i_slice_max_size = MAX_UDP_SIZE;
-  x264defaultParam.rc.i_vbv_max_bitrate = 6000;
-  x264defaultParam.rc.i_vbv_buffer_size = 200;
+  // x264defaultParam.i_slice_max_size = MAX_UDP_SIZE/2;
+  // x264defaultParam.rc.i_vbv_max_bitrate = 12000;
+  // x264defaultParam.rc.i_vbv_buffer_size = 400;
   // x264defaultParam.b_annexb = 1; 
 
   x264_param_apply_profile(&x264defaultParam, "baseline");
