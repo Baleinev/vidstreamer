@@ -233,29 +233,31 @@ int main(int argc,char *argv[])
   /*
    * If multi core system, keep the first core for the poller
    */
-  if(flagAffinity && (num_cores = sysconf(_SC_NPROCESSORS_ONLN)) > 1)
+  if(flagAffinity)
   {
-    LOG("Setting affinity. %d detected cores",num_cores);
+    if(num_cores = sysconf(_SC_NPROCESSORS_ONLN)) > 1)
+    {
+      LOG("Setting affinity. %d detected cores",num_cores);
 
-    CPU_ZERO(&cpuset);
-    CPU_SET(0, &cpuset);
+      CPU_ZERO(&cpuset);
+      CPU_SET(0, &cpuset);
 
-    pthread_setaffinity_np(poller, sizeof(cpu_set_t), &cpuset);      
+      pthread_setaffinity_np(poller, sizeof(cpu_set_t), &cpuset);      
 
-    CPU_ZERO(&cpuset);
+      CPU_ZERO(&cpuset);
 
-    for(i=1;i<num_cores;i++)
-      CPU_SET(i, &cpuset);
+      for(i=1;i<num_cores;i++)
+        CPU_SET(i, &cpuset);
 
-    for(i=0;i < nbEncoders;i++)
-      pthread_setaffinity_np(encoders[i], sizeof(cpu_set_t), &cpuset);      
-    
+      for(i=0;i < nbEncoders;i++)
+        pthread_setaffinity_np(encoders[i], sizeof(cpu_set_t), &cpuset);      
+      
+    }
+    else if(num_cores != 1)
+    {
+      ERR("Cannot detect numbers of cores: %d. Cannot set affinity. Not fatal but performance will suffer.",num_cores);
+    }
   }
-  else if(num_cores != 1)
-  {
-    ERR("Cannot detect numbers of cores: %d. Cannot set affinity. Not fatal but performance will suffer.",num_cores);
-  }
-
   /*
    * Configure the terminal so any key press will be processed imediately (without the need of a return)
    */
