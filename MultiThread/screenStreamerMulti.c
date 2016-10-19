@@ -191,7 +191,7 @@ int main(int argc,char *argv[])
   x264defaultParam.rc.i_rc_method = X264_RC_CRF;
   x264defaultParam.rc.f_rf_constant = 25;
   //For streaming:
-  x264defaultParam.max_slice_size = 1500;
+  x264defaultParam.max_slice_size = 500;
   // x264defaultParam.b_annexb = 1; 
 
   x264_param_apply_profile(&x264defaultParam, "baseline");
