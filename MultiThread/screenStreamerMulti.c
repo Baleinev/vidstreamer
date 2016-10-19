@@ -27,6 +27,8 @@ unsigned int bytesPerLineSrc;
 
 bool flagQuit = false; 
 
+bool flagAffinity = false;
+
 char *sharedFrame;
 
 unsigned int nbEncoders;
@@ -111,10 +113,12 @@ int main(int argc,char *argv[])
 
   static struct termios oldt, newt;  
 
-  while ((c = getopt (argc, argv, "h:w:n:d:f::")) != -1)
+  while ((c = getopt (argc, argv, "ah:w:n:d:f::")) != -1)
   {
     switch (c)
       {
+      case 'a':
+        flagAffinity = true;
       case 'h':
         screenHeight = atoi(optarg);
         break;
@@ -204,7 +208,7 @@ int main(int argc,char *argv[])
   /*
    * If multi core system, keep the first core for the poller
    */
-  if((num_cores = sysconf(_SC_NPROCESSORS_ONLN)) > 1)
+  if(flagAffinity && (num_cores = sysconf(_SC_NPROCESSORS_ONLN)) > 1)
   {
     LOG("Setting affinity. %d detected cores",num_cores);
 
