@@ -218,7 +218,7 @@ void *threadVideoStream(void * param)
      * Set manually IDR header for intra refresh?
      */
     if(flagIntra)
-      *(nals[0].p_payload+5) = 0x27; 
+      *(nals[0].p_payload+5) = 0x64; 
 
     alreadySent = 0;
     sent = 0;  
