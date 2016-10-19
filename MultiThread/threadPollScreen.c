@@ -29,6 +29,7 @@ extern unsigned int fps;
 extern char displayName[128];
 
 extern bool flagQuit;
+extern bool flagSleep;
 
 extern char *sharedFrame;
 
@@ -176,7 +177,7 @@ void *threadPollScreen(void * param)
 
     DBG("Time total: %ld ms",delta);
 
-    if(delta < 1000/fps)
+    if(flagSleep && delta < 1000/fps)
     {
       LOG("Sleeping %d ms",delta);      
       usleep(delta*1000);
