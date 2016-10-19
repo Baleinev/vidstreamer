@@ -192,8 +192,8 @@ int main(int argc,char *argv[])
   x264defaultParam.rc.f_rf_constant = 25;
   //For streaming:
   x264defaultParam.i_slice_max_size = 500;
-  // x264defaultParam.rc.vbv_maxrate = 5000;
-  // x264defaultParam.rc.vbv_bufsize = 1;
+  x264defaultParam.rc.i_vbv_max_bitrate = 5000;
+  x264defaultParam.rc.i_vbv_buffer_size = 1;
   // x264defaultParam.b_annexb = 1; 
 
   x264_param_apply_profile(&x264defaultParam, "baseline");
