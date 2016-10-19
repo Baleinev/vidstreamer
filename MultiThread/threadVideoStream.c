@@ -26,7 +26,6 @@ extern unsigned int bytesPerLineSrc;
 
 extern bool flagQuit;
 extern bool flagIntra;
-extern bool flagDontWaitForConsumers;
 
 extern char *sharedFrame;
 

@@ -33,6 +33,8 @@ extern bool flagSleep;
 
 extern char *sharedFrame;
 
+extern bool flagDontWaitForConsumers;
+
 extern bool flagDataAvailable;
 extern unsigned int memcopyDone;
 extern unsigned int frameId;
