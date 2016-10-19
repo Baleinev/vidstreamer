@@ -33,7 +33,7 @@ extern bool flagSleep;
 
 extern char *sharedFrame;
 
-extern bool flagDontWaitForConsumers;
+extern bool flagWaitForConsumers;
 
 extern bool flagDataAvailable;
 extern unsigned int memcopyDone;
@@ -159,7 +159,7 @@ void *threadPollScreen(void * param)
 
       pthread_cond_broadcast(&condDataAvailable);
 
-      while(!flagDontWaitForConsumers && flagQuit && memcopyDone != nbEncoders)
+      while(flagWaitForConsumers && flagQuit && memcopyDone != nbEncoders)
         pthread_cond_wait(&condDataConsummed,&mutexCapturedFrame);
       
       memcopyDone = 0;

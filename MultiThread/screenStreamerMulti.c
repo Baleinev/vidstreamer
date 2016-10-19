@@ -16,7 +16,7 @@
 #include "threadVideoStream.h"
 #include "threadPollScreen.h"
 
-char displayName[128];
+char displayName[128] = ":0.0";
 
 unsigned int fps = 30;
 
@@ -30,8 +30,8 @@ bool flagQuit = false;
 bool flagAffinity = false;
 bool flagSleep = false;
 bool flagIntra = false;
-bool flagDontWaitForConsumers = false;
-bool flagKeyint = false;
+bool flagWaitForConsumers = false;
+bool flagForceKeyint = false;
 
 char *sharedFrame;
 
@@ -117,7 +117,7 @@ int main(int argc,char *argv[])
 
   static struct termios oldt, newt;  
 
-  while ((c = getopt (argc, argv, "iaswkn:d:f::")) != -1)
+  while ((c = getopt (argc, argv, "iaswkn:d::f::")) != -1)
   {
     switch (c)
       {
@@ -131,13 +131,13 @@ int main(int argc,char *argv[])
         flagSleep = true;
         break;
       case 'w':
-        flagDontWaitForConsumers = true;
+        flagWaitForConsumers = true;
         break;
       case 'n':
         nbEncoders = atoi(optarg);
         break;
       case 'k':
-        flagKeyint = true;
+        flagForceKeyint = true;
         break;
       case 'd':
         strncpy(displayName,optarg,128);
@@ -158,6 +158,17 @@ int main(int argc,char *argv[])
       }
   }
 
+  LOG("Config: intra:%d, affinity:%d, sleep:%d, wait:%d nbEncoder:%d, forcekeyint:%d, displayName:%d, fps:%d",
+    flagIntra,
+    flagAffinity,
+    flagSleep,
+    flagWaitForConsumers,
+    nbEncoders,
+    flagForceKeyint,
+    displayName,
+    fps
+  );
+
   // for (i = optind; i < argc; i++)
     // printf ("Non-option argument %s\n", argv[i]);
 
@@ -174,7 +185,7 @@ int main(int argc,char *argv[])
   x264defaultParam.i_fps_num = fps;
   x264defaultParam.i_fps_den = 1;
   // Intra refres:
-  x264defaultParam.i_keyint_max = flagKeyint == true ? 1 : fps;
+  x264defaultParam.i_keyint_max = flagForceKeyint == true ? 1 : fps;
   x264defaultParam.b_intra_refresh = flagIntra == true ? 1 : 0;
   //Rate control:
   x264defaultParam.rc.i_rc_method = X264_RC_CRF;
