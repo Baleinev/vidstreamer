@@ -28,6 +28,7 @@ unsigned int bytesPerLineSrc;
 bool flagQuit = false; 
 
 bool flagAffinity = false;
+bool flagSleep = false;
 
 char *sharedFrame;
 
@@ -119,11 +120,9 @@ int main(int argc,char *argv[])
       {
       case 'a':
         flagAffinity = true;
-      case 'h':
-        screenHeight = atoi(optarg);
         break;
-      case 'w':
-        screenWidth = atoi(optarg);
+      case 's':
+        flagSleep = true;
         break;
       case 'n':
         nbEncoders = atoi(optarg);
@@ -135,7 +134,7 @@ int main(int argc,char *argv[])
         fps = atoi(optarg);
         break;
       case '?':
-        if (optopt == 'h' || optopt == 'w' || optopt == 'd' || optopt == 'f')
+        if (optopt == 'd' || optopt == 'f')
           fprintf (stderr, "Option -%c requires an argument.\n", optopt);
         else if (isprint (optopt))
           fprintf (stderr, "Unknown option `-%c'.\n", optopt);
