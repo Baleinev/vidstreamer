@@ -235,7 +235,7 @@ int main(int argc,char *argv[])
    */
   if(flagAffinity)
   {
-    if(num_cores = sysconf(_SC_NPROCESSORS_ONLN)) > 1))
+    if((num_cores = sysconf(_SC_NPROCESSORS_ONLN)) > 1)
     {
       LOG("Setting affinity. %d detected cores",num_cores);
 
@@ -257,7 +257,7 @@ int main(int argc,char *argv[])
     {
       ERR("Cannot detect numbers of cores: %d. Cannot set affinity. Not fatal but performance will suffer.",num_cores);
     }
-  )}
+  }
   /*
    * Configure the terminal so any key press will be processed imediately (without the need of a return)
    */
