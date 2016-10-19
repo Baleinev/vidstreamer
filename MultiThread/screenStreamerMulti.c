@@ -31,6 +31,7 @@ bool flagAffinity = false;
 bool flagSleep = false;
 bool flagIntra = false;
 bool flagDontWaitForConsumers = false;
+bool flagKeyint = false;
 
 char *sharedFrame;
 
@@ -116,7 +117,7 @@ int main(int argc,char *argv[])
 
   static struct termios oldt, newt;  
 
-  while ((c = getopt (argc, argv, "iaswn:d:f::")) != -1)
+  while ((c = getopt (argc, argv, "iaswnk:d:f::")) != -1)
   {
     switch (c)
       {
@@ -134,6 +135,9 @@ int main(int argc,char *argv[])
         break;
       case 'n':
         nbEncoders = atoi(optarg);
+        break;
+      case 'k':
+        flagKeyint = true;
         break;
       case 'd':
         strncpy(displayName,optarg,128);
@@ -170,7 +174,7 @@ int main(int argc,char *argv[])
   x264defaultParam.i_fps_num = fps;
   x264defaultParam.i_fps_den = 1;
   // Intra refres:
-  x264defaultParam.i_keyint_max = fps;
+  x264defaultParam.i_keyint_max = flagKeyint ? 1 : fps;
   x264defaultParam.b_intra_refresh = flagIntra ? 1 : 0;
   //Rate control:
   x264defaultParam.rc.i_rc_method = X264_RC_CRF;

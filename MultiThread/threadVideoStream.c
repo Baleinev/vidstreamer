@@ -199,13 +199,11 @@ void *threadVideoStream(void * param)
     /*
      * Color conversion 
      */
-    // uint8_t * inData[1] = { croppedFrame };
     sws_scale(convertCtx, &croppedFrame, &srcstride, 0, config->height, pic_in.img.plane, pic_in.img.i_stride);
-      // sws_scale(convertCtx, &image->data,                       &srcstride, 0, height, pic_in.img.plane, pic_in.img.i_stride);
+
     /*
      * Add an incrementing dummy timestamp to the frame
-     */  
-    
+     */
     gettimeofday(&timeScaling,NULL);
     DBG("Time scaling: %ld ms",(timeScaling.tv_sec-timeWait.tv_sec)*1000+(timeScaling.tv_usec-timeWait.tv_usec)/1000);    
     pic_in.i_pts = curFrameId;
