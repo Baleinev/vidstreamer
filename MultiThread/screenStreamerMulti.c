@@ -185,7 +185,7 @@ int main(int argc,char *argv[])
   x264defaultParam.i_fps_num = fps;
   x264defaultParam.i_fps_den = 1;
   // Intra refres:
-  x264defaultParam.i_keyint_max = flagForceKeyint == true ? 1 : fps;
+  x264defaultParam.i_keyint_max = flagForceKeyint == true ? 1 : fps*2;
   x264defaultParam.b_intra_refresh = flagIntra == true ? 1 : 0;
   //Rate control:
   x264defaultParam.rc.i_rc_method = X264_RC_CRF;
