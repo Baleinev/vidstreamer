@@ -189,7 +189,7 @@ int main(int argc,char *argv[])
   x264defaultParam.b_intra_refresh = flagIntra == true ? 1 : 0;
   //Rate control:
   x264defaultParam.rc.i_rc_method = X264_RC_CRF;
-  x264defaultParam.rc.f_rf_constant = 20;
+  x264defaultParam.rc.f_rf_constant = 25;
   //For streaming:
   x264defaultParam.i_slice_max_size = MAX_UDP_SIZE/2;
   x264defaultParam.rc.i_vbv_max_bitrate = 20000;
