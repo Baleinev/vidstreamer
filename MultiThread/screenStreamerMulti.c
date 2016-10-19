@@ -174,7 +174,7 @@ int main(int argc,char *argv[])
   x264defaultParam.b_intra_refresh = flagIntra ? 1 : 0;
   //Rate control:
   x264defaultParam.rc.i_rc_method = X264_RC_CRF;
-  x264defaultParam.rc.f_rf_constant = 20;
+  x264defaultParam.rc.f_rf_constant = 25;
   //For streaming:
   // x264defaultParam.b_repeat_headers = 1;
   // x264defaultParam.b_annexb = 1; 
