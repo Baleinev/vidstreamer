@@ -30,6 +30,7 @@ bool flagQuit = false;
 bool flagAffinity = false;
 bool flagSleep = false;
 bool flagIntra = false;
+bool flagDontWaitForConsumers = false;
 
 char *sharedFrame;
 
@@ -115,7 +116,7 @@ int main(int argc,char *argv[])
 
   static struct termios oldt, newt;  
 
-  while ((c = getopt (argc, argv, "iash:w:n:d:f::")) != -1)
+  while ((c = getopt (argc, argv, "iaswn:d:f::")) != -1)
   {
     switch (c)
       {
@@ -127,6 +128,9 @@ int main(int argc,char *argv[])
         break;
       case 's':
         flagSleep = true;
+        break;
+      case 'w':
+        flagDontWaitForConsumers = true;
         break;
       case 'n':
         nbEncoders = atoi(optarg);
