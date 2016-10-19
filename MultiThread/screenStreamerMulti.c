@@ -48,10 +48,10 @@ pthread_t poller;
 pthread_t encoders[MAX_ENCODERS];
 
 /* TODO: get all these infos from config file */
-const unsigned int xOffset[5] = {0,800,1600,2400,3200};
+const unsigned int xOffset[5] = {0,1024,2048,3072,4096};
 const unsigned int yOffset[5] = {0,0,0,0,0};
-const unsigned int width[5] = {800,800,800,800,800};
-const unsigned int height[5] = {600,600,600,600,600};
+const unsigned int width[5] = {1024,1024,1024,1024,1024};
+const unsigned int height[5] = {768,768,768,768,768};
 
 unsigned char targetHost[5][128] = {
   "192.168.1.135",
