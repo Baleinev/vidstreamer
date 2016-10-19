@@ -74,7 +74,7 @@ void *threadVideoStream(void * param)
     goto FAIL_SOCKET;
   }
 
-  int tmp = 1024*4*7;
+  int tmp = 1024;
 
   if(setsockopt(sendingSocket, SOL_SOCKET, SO_SNDBUF, &tmp, sizeof(tmp)) < 0)
   {
