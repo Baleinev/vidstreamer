@@ -29,6 +29,7 @@ bool flagQuit = false;
 
 bool flagAffinity = false;
 bool flagSleep = false;
+bool flagIntra = false;
 
 char *sharedFrame;
 
@@ -114,10 +115,13 @@ int main(int argc,char *argv[])
 
   static struct termios oldt, newt;  
 
-  while ((c = getopt (argc, argv, "ash:w:n:d:f::")) != -1)
+  while ((c = getopt (argc, argv, "iash:w:n:d:f::")) != -1)
   {
     switch (c)
       {
+      case 'i':
+        flagIntra = true;
+        break;        
       case 'a':
         flagAffinity = true;
         break;
@@ -163,7 +167,7 @@ int main(int argc,char *argv[])
   x264defaultParam.i_fps_den = 1;
   // Intra refres:
   x264defaultParam.i_keyint_max = fps;
-  x264defaultParam.b_intra_refresh = 0;
+  x264defaultParam.b_intra_refresh = flagIntra ? 1 : 0;
   //Rate control:
   x264defaultParam.rc.i_rc_method = X264_RC_CRF;
   x264defaultParam.rc.f_rf_constant = 20;

@@ -25,6 +25,7 @@ extern unsigned int bytesPerPixelSrc;
 extern unsigned int bytesPerLineSrc;
 
 extern bool flagQuit;
+extern bool flagIntra;
 
 extern char *sharedFrame;
 
@@ -216,7 +217,8 @@ void *threadVideoStream(void * param)
     /*
      * Set manually IDR header for intra refresh?
      */
-    // *(nals[0].p_payload+5) = 0x27; 
+    if(flagIntra)
+      *(nals[0].p_payload+5) = 0x27; 
 
     alreadySent = 0;
     sent = 0;  
