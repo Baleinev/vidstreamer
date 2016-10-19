@@ -162,11 +162,11 @@ int main(int argc,char *argv[])
   x264defaultParam.i_keyint_max = fps;
   x264defaultParam.b_intra_refresh = 0;
   //Rate control:
-  // x264defaultParam.rc.i_rc_method = X264_RC_CRF;
-  // x264defaultParam.rc.f_rf_constant = 20;
+  x264defaultParam.rc.i_rc_method = X264_RC_CRF;
+  x264defaultParam.rc.f_rf_constant = 20;
   //For streaming:
-  x264defaultParam.b_repeat_headers = 1;
-  x264defaultParam.b_annexb = 1; 
+  // x264defaultParam.b_repeat_headers = 1;
+  // x264defaultParam.b_annexb = 1; 
 
   x264_param_apply_profile(&x264defaultParam, "baseline");
 
