@@ -76,10 +76,16 @@ void *threadVideoStream(void * param)
 
   int tmp = 1024*4*7;
 
-  if(setsockopt(sendingSocket, SOL_SOCKET, SO_SNDBUF, &tmp, sizeof(tmp))<0)
+  if(setsockopt(sendingSocket, SOL_SOCKET, SO_SNDBUF, &tmp, sizeof(tmp)) < 0)
   {
     ERR("Cannot setsockopt. Non-fatal, but the latency will suffer if the UDP send buffer is too big.");
   }
+
+  if(setsockopt(sendingSocket, SOL_SOCKET, SO_BINDTODEVICE, config->interface, strlen(config->interface)) < 0)
+  {
+      ERR("Cannot bind to selected interface: %s",config->interface);
+      goto FAIL_SOCKET_INTERFACE;
+  }  
 
   memset((char *) &si_other, 0, sizeof(si_other));
   si_other.sin_family = AF_INET;
@@ -260,6 +266,7 @@ void *threadVideoStream(void * param)
     x264_encoder_close(encoder);
   FAIL_ENCODER:
   FAIL_INET_ATON:
+  FAIL_SOCKET_INTERFACE:
 
     close(sendingSocket);
   FAIL_SOCKET:

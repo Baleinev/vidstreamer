@@ -31,6 +31,8 @@ typedef struct streamerConfig_t
   x264_param_t x264param;
 
   unsigned char targetHost[128];
+  unsigned char interface[32];
+
   unsigned int targetPort;
 
 } streamerConfig_t;

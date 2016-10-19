@@ -198,6 +198,7 @@ int main(int argc,char *argv[])
     streamerConfig[i].height = height[i];
     streamerConfig[i].targetPort = targetPort[i];
 
+    strncpy(streamerConfig[i].interface,i%2 ? "eth0" : "eth1", 32);
     strncpy(streamerConfig[i].targetHost,targetHost[i],128);
     memcpy(&(streamerConfig[i].x264param),&x264defaultParam,sizeof(x264_param_t));
 
