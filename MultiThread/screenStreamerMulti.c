@@ -117,7 +117,7 @@ int main(int argc,char *argv[])
 
   static struct termios oldt, newt;  
 
-  while ((c = getopt (argc, argv, "iaswnk:d:f::")) != -1)
+  while ((c = getopt (argc, argv, "iaswkn:d:f::")) != -1)
   {
     switch (c)
       {
