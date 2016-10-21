@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <pthread.h>
@@ -15,10 +14,12 @@
 #include "screenStreamerMulti.h"
 #include "threadVideoStream.h"
 #include "threadPollScreen.h"
+#include "configParser.h"
 
-char displayName[128] = ":0.0";
+char displayName[CONFIG_DISPLAYNAME_MAXLENGTH] = ":0.0";
+char configFile[CONFIG_FILEPATH_MAXLENGTH] = "/etc/pmw.d/streamer.conf";
 
-unsigned int fps = 30;
+// unsigned int fps = 30;
 
 unsigned int screenWidth;
 unsigned int screenHeight;
@@ -27,17 +28,20 @@ unsigned int bytesPerLineSrc;
 
 bool flagQuit = false; 
 
-bool flagAffinity = false;
-bool flagSleep = false;
-bool flagIntra = false;
-bool flagWaitForConsumers = false;
-bool flagForceKeyint = false;
+globalConfig_t globalConfig;
+
+// bool flagAffinity = false;
+// bool flagSleep = false;
+// bool flagIntra = false;
+// bool flagWaitForConsumers = false;
+// bool flagForceKeyint = false;
 
 char *sharedFrame;
 
-unsigned int nbEncoders;
+// unsigned int nbEncoders;
 
-bool flagDataAvailable = false;
+// bool flagDataAvailable = false;
+// 
 unsigned int memcopyDone = 0;
 unsigned int frameId = 0;
 
@@ -46,23 +50,23 @@ pthread_cond_t condDataConsummed = PTHREAD_COND_INITIALIZER;
 
 pthread_mutex_t mutexCapturedFrame = PTHREAD_MUTEX_INITIALIZER; 
 
-pthread_t poller;
-pthread_t encoders[MAX_ENCODERS];
+pthread_t grabber;
+pthread_t *streamers; //[MAX_STREAMERS];
 
-/* TODO: get all these infos from config file */
-const unsigned int xOffset[5] = {0,1024,2048,3072,4096};
-const unsigned int yOffset[5] = {0,0,0,0,0};
-const unsigned int width[5] = {1024,1024,1024,1024,1024};
-const unsigned int height[5] = {768,768,768,768,768};
+// /* TODO: get all these infos from config file */
+// const unsigned int xOffset[5] = {0,1024,2048,3072,4096};
+// const unsigned int yOffset[5] = {0,0,0,0,0};
+// const unsigned int width[5] = {1024,1024,1024,1024,1024};
+// const unsigned int height[5] = {768,768,768,768,768};
 
-unsigned char targetHost[5][128] = {
-  "192.168.1.135",
-  "192.168.1.122",
-  "192.168.1.127",
-  "192.168.1.128",
-  "192.168.1.126"
-};
-unsigned int targetPort[5] = {4243,4243,4243,4243,4243};
+// unsigned char targetHost[5][128] = {
+//   "192.168.1.135",
+//   "192.168.1.122",
+//   "192.168.1.127",
+//   "192.168.1.128",
+//   "192.168.1.126"
+// };
+// unsigned int targetPort[5] = {4243,4243,4243,4243,4243};
 
 
 dumpRGBAjpeg(unsigned char *data,unsigned int width,unsigned int height,const char *name)
@@ -117,36 +121,41 @@ int main(int argc,char *argv[])
 
   static struct termios oldt, newt;  
 
-  while ((c = getopt (argc, argv, "iaswkn:d::f::")) != -1)
+  // while ((c = getopt (argc, argv, "iaswkn:d::f::")) != -1)
+  
+  while ((c = getopt (argc, argv, "d:")) != -1)
   {
     switch (c)
       {
-      case 'i':
-        flagIntra = true;
-        break;        
-      case 'a':
-        flagAffinity = true;
-        break;
-      case 's':
-        flagSleep = true;
-        break;
-      case 'w':
-        flagWaitForConsumers = true;
-        break;
-      case 'n':
-        nbEncoders = atoi(optarg);
-        break;
-      case 'k':
-        flagForceKeyint = true;
-        break;
+      // case 'i':
+      //   flagIntra = true;
+      //   break;        
+      // case 'a':
+      //   flagAffinity = true;
+      //   break;
+      // case 's':
+      //   flagSleep = true;
+      //   break;
+      // case 'w':
+      //   flagWaitForConsumers = true;
+      //   break;
+      // case 'n':
+      //   nbEncoders = atoi(optarg);
+      //   break;
+      // case 'k':
+      //   flagForceKeyint = true;
+      //   break;
       case 'd':
-        strncpy(displayName,optarg,128);
+        strncpy(displayName,optarg,CONFIG_DISPLAYNAME_MAXLENGTH);
         break;
-      case 'f':
-        fps = atoi(optarg);
-        break;
+      case 'c':
+      	strncpy(configFile,optarg,CONFIG_FILEPATH_MAXLENGTH);
+      break;
+      // case 'f':
+      //   fps = atoi(optarg);
+      //   break;
       case '?':
-        if (optopt == 'd' || optopt == 'f')
+        if (optopt == 'd' | optopt == 'c')
           fprintf (stderr, "Option -%c requires an argument.\n", optopt);
         else if (isprint (optopt))
           fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -158,106 +167,99 @@ int main(int argc,char *argv[])
       }
   }
 
-  LOG("Config: intra:%d, affinity:%d, sleep:%d, wait:%d nbEncoder:%d, forcekeyint:%d, displayName:%s, fps:%d",
-    flagIntra,
-    flagAffinity,
-    flagSleep,
-    flagWaitForConsumers,
-    nbEncoders,
-    flagForceKeyint,
-    displayName,
-    fps
-  );
+  // LOG("Config: intra:%d, affinity:%d, sleep:%d, wait:%d nbEncoder:%d, forcekeyint:%d, displayName:%s, fps:%d",
+  //   flagIntra,
+  //   flagAffinity,
+  //   flagSleep,
+  //   flagWaitForConsumers,
+  //   nbEncoders,
+  //   flagForceKeyint,
+  //   displayName,
+  //   fps
+  // );
+
+  if(parseConfig(configFile,&globalConfig) == false)
+  {
+  	ERR("Error parsing config");
+  	goto FAIL_CONFIG;
+  }
+
+  printConfig(&globalConfig);
 
   // for (i = optind; i < argc; i++)
     // printf ("Non-option argument %s\n", argv[i]);
 
-  if(nbEncoders < 1 || nbEncoders > MAX_ENCODERS)
-  {
-    ERR("Invalid requested number of encoders: %d ",nbEncoders);
-    goto FAIL_NBENCODERS;
-  }
+  // if(nbEncoders < 1 || nbEncoders > MAX_ENCODERS)
+  // {
+  //   ERR("Invalid requested number of encoders: %d ",nbEncoders);
+  //   goto FAIL_NBENCODERS;
+  // }
   
-  
-  x264_param_default_preset(&x264defaultParam, "ultrafast", "zerolatency");
 
-  x264defaultParam.i_threads = 1;
-  x264defaultParam.i_fps_num = fps;
-  x264defaultParam.i_fps_den = 1;
-  // Intra refres:
-  x264defaultParam.i_keyint_max = flagForceKeyint == true ? 1 : fps*2;
-  x264defaultParam.b_intra_refresh = flagIntra == true ? 1 : 0;
-  //Rate control:
-  x264defaultParam.rc.i_rc_method = X264_RC_CRF;
-  x264defaultParam.rc.f_rf_constant = 25;
-  //For streaming:
-  // x264defaultParam.i_slice_max_size = MAX_UDP_SIZE;
-  x264defaultParam.rc.i_vbv_max_bitrate = 20000;
-  x264defaultParam.rc.i_vbv_buffer_size = 1;
-  // x264defaultParam.b_annexb = 1; 
-
-  x264_param_apply_profile(&x264defaultParam, "baseline");
 
   /*
    * Prepare config struct for every encoder thread
    */
-  if((streamerConfig = (streamerConfig_t *)(malloc(sizeof(streamerConfig_t)*nbEncoders))) == NULL)
+  // if((streamerConfig = (streamerConfig_t *)(malloc(sizeof(streamerConfig_t)*nbEncoders))) == NULL)
+  // {
+  //   ERR("Cannot malloc %ld bytes for streamerConfig",sizeof(streamerConfig_t)*nbEncoders);
+  //   goto FAIL_MALLOCCONFIG;
+  // }
+
+  // for(i=0;i < nbEncoders;i++)
+  // {
+  //   streamerConfig[i].xOffset = xOffset[i];
+  //   streamerConfig[i].yOffset = yOffset[i];
+  //   streamerConfig[i].width = width[i];
+  //   streamerConfig[i].height = height[i];
+  //   streamerConfig[i].targetPort = targetPort[i];
+
+  //   strncpy(streamerConfig[i].interface,i%2 ? "eth0" : "eth1", 32);
+  //   strncpy(streamerConfig[i].targetHost,targetHost[i],128);
+  //   memcpy(&(streamerConfig[i].x264param),&x264defaultParam,sizeof(x264_param_t));
+
+  //   streamerConfig[i].x264param.i_width = streamerConfig[i].width;
+  //   streamerConfig[i].x264param.i_height = streamerConfig[i].height;
+  // }
+  // 
+  
+  streamers = (pthread_t *)malloc(sizeof(pthread_t)*globalConfig.grabber.nbStreamers);
+
+  pthread_create(&grabber,NULL,&threadPollScreen,(void *)&(globalConfig.grabber));
+
+  for(i=0;i < globalConfig.grabber.nbStreamers;i++) 
   {
-    ERR("Cannot malloc %ld bytes for streamerConfig",sizeof(streamerConfig_t)*nbEncoders);
-    goto FAIL_MALLOCCONFIG;
-  }
-
-  for(i=0;i < nbEncoders;i++)
-  {
-    streamerConfig[i].xOffset = xOffset[i];
-    streamerConfig[i].yOffset = yOffset[i];
-    streamerConfig[i].width = width[i];
-    streamerConfig[i].height = height[i];
-    streamerConfig[i].targetPort = targetPort[i];
-
-    strncpy(streamerConfig[i].interface,i%2 ? "eth0" : "eth1", 32);
-    strncpy(streamerConfig[i].targetHost,targetHost[i],128);
-    memcpy(&(streamerConfig[i].x264param),&x264defaultParam,sizeof(x264_param_t));
-
-    streamerConfig[i].x264param.i_width = streamerConfig[i].width;
-    streamerConfig[i].x264param.i_height = streamerConfig[i].height;
-  }
-
-  pthread_create(&poller,NULL,&threadPollScreen,NULL);
-
-  for(i=0;i < nbEncoders;i++) 
-  {
-    pthread_create(&(encoders[i]),NULL,&threadVideoStream,(void *)(streamerConfig+i));  
+    pthread_create(&(streamers[i]),NULL,&threadVideoStream,(void *)&(globalConfig.streamers[i]));  
   }
 
   /*
    * If multi core system, keep the first core for the poller
    */
-  if(flagAffinity)
-  {
-    if((num_cores = sysconf(_SC_NPROCESSORS_ONLN)) > 1)
-    {
-      LOG("Setting affinity. %d detected cores",num_cores);
+  // if(flagAffinity)
+  // {
+  //   if((num_cores = sysconf(_SC_NPROCESSORS_ONLN)) > 1)
+  //   {
+  //     LOG("Setting affinity. %d detected cores",num_cores);
 
-      CPU_ZERO(&cpuset);
-      CPU_SET(0, &cpuset);
+  //     CPU_ZERO(&cpuset);
+  //     CPU_SET(0, &cpuset);
 
-      pthread_setaffinity_np(poller, sizeof(cpu_set_t), &cpuset);      
+  //     pthread_setaffinity_np(poller, sizeof(cpu_set_t), &cpuset);      
 
-      CPU_ZERO(&cpuset);
+  //     CPU_ZERO(&cpuset);
 
-      for(i=1;i<num_cores;i++)
-        CPU_SET(i, &cpuset);
+  //     for(i=1;i<num_cores;i++)
+  //       CPU_SET(i, &cpuset);
 
-      for(i=0;i < nbEncoders;i++)
-        pthread_setaffinity_np(encoders[i], sizeof(cpu_set_t), &cpuset);      
+  //     for(i=0;i < nbEncoders;i++)
+  //       pthread_setaffinity_np(encoders[i], sizeof(cpu_set_t), &cpuset);      
       
-    }
-    else if(num_cores != 1)
-    {
-      ERR("Cannot detect numbers of cores: %d. Cannot set affinity. Not fatal but performance will suffer.",num_cores);
-    }
-  }
+  //   }
+  //   else if(num_cores != 1)
+  //   {
+  //     ERR("Cannot detect numbers of cores: %d. Cannot set affinity. Not fatal but performance will suffer.",num_cores);
+  //   }
+  // }
   /*
    * Configure the terminal so any key press will be processed imediately (without the need of a return)
    */
@@ -278,13 +280,14 @@ int main(int argc,char *argv[])
   pthread_cond_broadcast(&condDataAvailable);
 
 
-  for(i=0;i< nbEncoders;i++)
-    pthread_join(encoders[i],NULL);
+  for(i=0;i< globalConfig.grabber.nbStreamers;i++)
+    pthread_join(streamers[i],NULL);
 
   free(streamerConfig);
 
   FAIL_MALLOCCONFIG:
   FAIL_NBENCODERS:
+  FAIL_CONFIG:
   return 0;
 }
 

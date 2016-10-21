@@ -24,22 +24,21 @@ extern unsigned int screenHeight;
 extern unsigned int bytesPerPixelSrc;
 extern unsigned int bytesPerLineSrc;
 
-extern unsigned int fps;
+
+// extern unsigned int fps;
 
 extern char displayName[128];
 
 extern bool flagQuit;
-extern bool flagSleep;
+// extern bool flagSleep;
 
 extern char *sharedFrame;
 
-extern bool flagWaitForConsumers;
 
-extern bool flagDataAvailable;
 extern unsigned int memcopyDone;
 extern unsigned int frameId;
 
-extern unsigned int nbEncoders;
+// extern unsigned int nbEncoders;
 
 extern pthread_cond_t condDataAvailable;
 extern pthread_cond_t condDataConsummed ;
@@ -57,8 +56,12 @@ void *threadPollScreen(void * param)
   Window root;
   struct timeval now,last,timeGrab,timeWait;
 
+  struct grabberConfig_t *config = (struct grabberConfig_t *)param;
+
   const unsigned int xOffset = 0;
   const unsigned int yOffset = 0;
+
+  pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(config->affinity));        
 
   if((dpy = XOpenDisplay(displayName)) == NULL)
   {
@@ -159,7 +162,7 @@ void *threadPollScreen(void * param)
 
       pthread_cond_broadcast(&condDataAvailable);
 
-      while(flagWaitForConsumers && flagQuit && memcopyDone != nbEncoders)
+      while(config->waitForAll && flagQuit && memcopyDone != config->nbStreamers)
         pthread_cond_wait(&condDataConsummed,&mutexCapturedFrame);
       
       memcopyDone = 0;
@@ -179,7 +182,7 @@ void *threadPollScreen(void * param)
 
     DBG("Time total: %ld ms",delta);
 
-    if(flagSleep && delta < 1000/fps)
+    if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
       LOG("Sleeping %d ms",delta);      
       usleep(delta*1000);

@@ -1,10 +1,10 @@
 BIN=screenStreamerMulti
-OBJS=screenStreamerMulti.o threadPollScreen.o threadVideoStream.o
+OBJS=screenStreamerMulti.o threadPollScreen.o threadVideoStream.o configParser.o cJSON/cJSON.o
 
 CC=gcc
 CFLAGS=-O2 -Wall -g
 
-LDFLAGS=-lpthread -lx264 -lX11 -lXext -lswscale -ljpeg
+LDFLAGS=-lm -lpthread -lx264 -lX11 -lXext -lswscale -ljpeg
 
 all: $(BIN)
 

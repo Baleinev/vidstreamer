@@ -68,15 +68,15 @@ void *threadVideoStream(void * param)
   struct sockaddr_in si_other;
   int sendingSocket, slen = sizeof(si_other);
 
+  pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(config->affinity));        
+
   if ((sendingSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
   {
     ERR("Cannot open sending socket:%d errno:%d",sendingSocket,errno);
     goto FAIL_SOCKET;
   }
 
-  int tmp = 1024*32;
-
-  if(setsockopt(sendingSocket, SOL_SOCKET, SO_SNDBUF, &tmp, sizeof(tmp)) < 0)
+  if(setsockopt(sendingSocket, SOL_SOCKET, SO_SNDBUF, &(config->bufferSize), sizeof(config->bufferSize)) < 0)
   {
     ERR("Cannot setsockopt. Non-fatal, but the latency will suffer if the UDP send buffer is too big.");
   }
@@ -89,30 +89,30 @@ void *threadVideoStream(void * param)
 
   memset((char *) &si_other, 0, sizeof(si_other));
   si_other.sin_family = AF_INET;
-  si_other.sin_port = htons(config->targetPort);
+  si_other.sin_port = htons(config->port);
 
-  LOG("Sending to %s:%d",config->targetHost,config->targetPort);
+  LOG("Sending to %s:%d",config->ip,config->port);
    
-  if (inet_aton(config->targetHost , &si_other.sin_addr) == 0)
+  if (inet_aton(config->ip , &si_other.sin_addr) == 0)
   {
-    ERR("Cannot convert string to ip: %s",config->targetHost);
+    ERR("Cannot convert string to ip: %s",config->ip);
     goto FAIL_INET_ATON;
   }
 
 
-  if((encoder = x264_encoder_open(&(config->x264param))) == NULL)
+  if((encoder = x264_encoder_open(&(config->x264params))) == NULL)
   {
     ERR("Cannot open encoder: %ld",(long unsigned int)encoder);
     goto FAIL_ENCODER;
   }
 
 
-  if(x264_picture_alloc(&pic_in, X264_CSP_I420, config->width, config->height) < 0)
+  if(x264_picture_alloc(&pic_in, X264_CSP_I420, config->sizeX, config->sizeY) < 0)
   {
     ERR("Cannot allocate picture");
     goto FAIL_ALLOC;
   }
-  ERR("Allocated picture of %d x %d",config->width,config->height);
+  ERR("Allocated picture of %d x %d",config->sizeX,config->sizeY);
 
   // x264_picture_alloc(&pic_in, X264_CSP_I420, width, height);
 
@@ -120,11 +120,11 @@ void *threadVideoStream(void * param)
    * Init filter from swslib to YUV420 from RGBA. The alpha component is not used.
    */
   if((convertCtx = sws_getContext(
-    config->width,
-    config->height,
+    config->sizeX,
+    config->sizeY,
     AV_PIX_FMT_BGRA,
-    config->width,
-    config->height,
+    config->sizeX,
+    config->sizeY,
     PIX_FMT_YUV420P,
     SWS_FAST_BILINEAR, // Not the best, but the fastest
     NULL,
@@ -158,14 +158,14 @@ void *threadVideoStream(void * param)
 
     if(croppedFrame == NULL)
     {
-      if((croppedFrame = (char *)malloc(config->width*config->height*bytesPerPixelSrc)) == NULL)
+      if((croppedFrame = (char *)malloc(config->sizeX*config->sizeY*bytesPerPixelSrc)) == NULL)
       {
-        ERR("Cannot allocate %d bytes for cropped frame",config->width*config->height*bytesPerPixelSrc);
+        ERR("Cannot allocate %d bytes for cropped frame",config->sizeX*config->sizeY*bytesPerPixelSrc);
         goto FAIL_MALLOC_FRAME;
       }
-      srcstride = config->width*bytesPerPixelSrc;      
+      srcstride = config->sizeX*bytesPerPixelSrc;      
 
-      LOG("Allocate %d bytes (%d x %d x %d) for the cropped frame",config->width*config->height*bytesPerPixelSrc,config->width,config->height,bytesPerPixelSrc);
+      LOG("Allocate %d bytes (%d x %d x %d) for the cropped frame",config->sizeX*config->sizeY*bytesPerPixelSrc,config->sizeX,config->sizeY,bytesPerPixelSrc);
       LOG("Stride size %d",srcstride);
     }
     /*
@@ -173,13 +173,13 @@ void *threadVideoStream(void * param)
      */
     unsigned int bytesPointer;
     unsigned int curLine = 0;
-    unsigned int bytesOffset = config->yOffset*bytesPerLineSrc+config->xOffset*bytesPerPixelSrc;
-    unsigned int bytesPerLineDst = config->width*bytesPerPixelSrc;
+    unsigned int bytesOffset = config->offsetY*bytesPerLineSrc+config->offsetX*bytesPerPixelSrc;
+    unsigned int bytesPerLineDst = config->sizeX*bytesPerPixelSrc;
 
-    for(curLine=0,bytesPointer=bytesOffset; curLine < config->height; curLine++,bytesPointer+=bytesPerLineSrc)
+    for(curLine=0,bytesPointer=bytesOffset; curLine < config->sizeY; curLine++,bytesPointer+=bytesPerLineSrc)
       memcpy(croppedFrame+curLine*bytesPerLineDst,sharedFrame+bytesPointer,bytesPerLineDst);
 
-    // dumpRGBAjpeg(croppedFrame,config->width,config->height,"debug.jpg");
+    // dumpRGBAjpeg(croppedFrame,config->sizeX,config->sizeY,"debug.jpg");
 
     curFrameId = frameId;
 
@@ -199,7 +199,7 @@ void *threadVideoStream(void * param)
     /*
      * Color conversion 
      */
-    sws_scale(convertCtx, &croppedFrame, &srcstride, 0, config->height, pic_in.img.plane, pic_in.img.i_stride);
+    sws_scale(convertCtx, &croppedFrame, &srcstride, 0, config->sizeY, pic_in.img.plane, pic_in.img.i_stride);
 
     /*
      * Add an incrementing dummy timestamp to the frame
@@ -221,7 +221,7 @@ void *threadVideoStream(void * param)
     /*
      * Set manually IDR header for intra refresh?
      */
-    if(flagIntra)
+    if(config->x264params.b_intra_refresh)
       *(nals[0].p_payload+5) = 0x64; 
 
     alreadySent = 0;
