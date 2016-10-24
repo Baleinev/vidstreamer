@@ -233,7 +233,7 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
 
         DBG("Adding affinity to CPU %d",subitem->valueint);
 
-        affinityByteField &= 0x1 << subitem->valueint;
+        affinityByteField &= (0x1 << subitem->valueint);
       }
       setAffinity(&(globalConfig->grabber.affinity),affinityByteField);
     }
@@ -259,7 +259,7 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
       cJSON *affinity = cJSON_GetObjectItem(streamer,"affinity");
 
       /* Copy affinity array */
-      if((affinity != NULL && (nbAffinity = cJSON_GetArraySize(affinity))>0))
+      if((affinity != NULL && ((nbAffinity = cJSON_GetArraySize(affinity))>0)))
       {
         unsigned int affinityByteField = 0;
 
@@ -267,7 +267,9 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
         {
           cJSON * subitem = cJSON_GetArrayItem(affinity, j);
 
-          affinityByteField &= 0x1 << subitem->valueint;
+          DBG("Adding affinity to CPU %d",subitem->valueint);          
+
+          affinityByteField &= (0x1 << subitem->valueint);
         }
         setAffinity(&(globalConfig->streamers[i].affinity),affinityByteField);
       }
