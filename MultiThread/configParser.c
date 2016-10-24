@@ -22,6 +22,8 @@ enum jsonDataType_t {STRING,NUMBER,BOOL,FLOAT};
 
 static void setAffinity(cpu_set_t *cores,unsigned int bitsFiled)
 {
+  DBG("Affinity: %.8x",bitsFiled);
+
   int i;
   int numCores = sysconf(_SC_NPROCESSORS_ONLN);
 
@@ -35,7 +37,10 @@ static void setAffinity(cpu_set_t *cores,unsigned int bitsFiled)
       break;
 
     if(bit == 1)
+    {
+      DBG("Adding cpu %d",i);      
       CPU_SET(i, cores);
+    }
 
     bitsFiled = bitsFiled >> 1;
   }
@@ -218,12 +223,14 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
     int nbAffinity;
 
     /* Copy affinity array */
-    if((affinity != NULL && (nbAffinity = cJSON_GetArraySize(affinity))>0))
+    if((affinity != NULL && ((nbAffinity = cJSON_GetArraySize(affinity))>0))
     {
       unsigned int affinityByteField = 0;
 
       for(j=0;j<nbAffinity;j++)
       {
+        DBG("Adding affinity to CPU %d",subitem->valueint);
+
         cJSON * subitem = cJSON_GetArrayItem(affinity, j);
 
         affinityByteField &= 0x1 << subitem->valueint;
