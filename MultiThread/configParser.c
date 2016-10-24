@@ -312,7 +312,7 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
   cJSON_Delete(root);
   FAIL_PARSE:
 
-  fclose(confHandle);
+  // fclose(confHandle);
   FAIL_FOPEN:
 
   return false;
