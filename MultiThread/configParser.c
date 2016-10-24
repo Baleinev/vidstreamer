@@ -161,10 +161,10 @@ static bool updateConfig(cJSON *parent, const char *attribute, void *structData,
       strncpy((char *)structData,child->valuestring,strlen(child->valuestring));
     break;
     case FLOAT:
-      *((float *)structData) = child->valuedouble;
+      *((float *)structData) = (float)child->valuedouble;
     break;
     case BOOL:
-      *((bool *)structData) = child->valueint;
+      *((bool *)structData) = (bool)child->valueint;
     break;
     default:
       ERR("Unknown data type");
@@ -291,12 +291,12 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
           updateConfig(x264params,"maxKeyint",&(globalConfig->streamers[i].x264params.i_keyint_max),NUMBER);      
           updateConfig(x264params,"minKeyint",&(globalConfig->streamers[i].x264params.i_keyint_min),NUMBER);      
           updateConfig(x264params,"sliceMaxSize",&(globalConfig->streamers[i].x264params.i_slice_max_size),NUMBER);       
-          updateConfig(x264params,"intraRefersh",&(globalConfig->streamers[i].x264params.b_intra_refresh),NUMBER);      
+          updateConfig(x264params,"intraRefresh",&(globalConfig->streamers[i].x264params.b_intra_refresh),NUMBER);      
 
           updateConfig(x264params,"vbvMaxBitrate",&(globalConfig->streamers[i].x264params.rc.i_vbv_max_bitrate),NUMBER);      
           updateConfig(x264params,"vbvBufferSize",&(globalConfig->streamers[i].x264params.rc.i_vbv_buffer_size),NUMBER);  
           updateConfig(x264params,"method",&(globalConfig->streamers[i].x264params.rc.i_rc_method),NUMBER);      
-          updateConfig(x264params,"crf",&(globalConfig->streamers[i].x264params.rc.f_rf_constant),NUMBER);  
+          updateConfig(x264params,"crf",&(globalConfig->streamers[i].x264params.rc.f_rf_constant),FLOAT);  
         }
         updateConfig(encoding,"hardFpsLimiter",&(globalConfig->streamers[i].hardFpsLimiter),FLOAT); 
       }
