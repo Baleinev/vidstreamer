@@ -142,9 +142,12 @@ static bool updateConfig(cJSON *parent, const char *attribute, void *structData,
   
   if(child == NULL)
   {
-    ERR("Cannot get attribute %s",attribute);
+    ERR("Cannot update attribute %s",attribute);
     return false;
   }
+
+  DBG("Updting attribute %s",attribute);
+
 
   /*
    * C struct int and float members are 4-bytes aligned, aren't they?
