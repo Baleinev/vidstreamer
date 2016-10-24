@@ -279,7 +279,7 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
 
       if(encoding != NULL)
       {
-        cJSON *x264params = cJSON_GetObjectItem(streamer,"x264params");
+        cJSON *x264params = cJSON_GetObjectItem(encoding,"x264params");
 
         if(x264params != NULL)
         {
