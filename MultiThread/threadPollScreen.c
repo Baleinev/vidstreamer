@@ -162,7 +162,7 @@ void *threadPollScreen(void * param)
 
       pthread_cond_broadcast(&condDataAvailable);
 
-      while(config->waitForAll && flagQuit && memcopyDone != config->nbStreamers)
+      while(config->waitForAll && !flagQuit && memcopyDone != config->nbStreamers)
         pthread_cond_wait(&condDataConsummed,&mutexCapturedFrame);
       
       memcopyDone = 0;
