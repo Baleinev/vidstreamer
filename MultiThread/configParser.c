@@ -233,7 +233,7 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
 
         DBG("Adding affinity to CPU %d",subitem->valueint);
 
-        affinityByteField &= (0x1 << subitem->valueint);
+        affinityByteField |= (0x1 << subitem->valueint);
       }
       setAffinity(&(globalConfig->grabber.affinity),affinityByteField);
     }
@@ -269,7 +269,7 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
 
           DBG("Adding affinity to CPU %d",subitem->valueint);          
 
-          affinityByteField &= (0x1 << subitem->valueint);
+          affinityByteField |= (0x1 << subitem->valueint);
         }
         setAffinity(&(globalConfig->streamers[i].affinity),affinityByteField);
       }
