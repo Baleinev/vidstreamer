@@ -123,7 +123,7 @@ int main(int argc,char *argv[])
 
   // while ((c = getopt (argc, argv, "iaswkn:d::f::")) != -1)
   
-  while ((c = getopt (argc, argv, "d:")) != -1)
+  while ((c = getopt (argc, argv, "d:c:")) != -1)
   {
     switch (c)
       {
