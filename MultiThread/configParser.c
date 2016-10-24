@@ -80,7 +80,7 @@ void printConfig(globalConfig_t *globalConfig)
     cpuCount = CPU_COUNT(&(globalConfig->streamers[i].affinity));
 
     LOG("Streamer %d config:",i);
-    LOG("offsetX:%d/offsetY:%d/sizeX:%d/sizeY:%d/ip:%s/port:%d/interface:%s/bufferSize:%d/hardFpsLimiter:%f/affinity%d\n",
+    LOG("offsetX:%d/offsetY:%d/sizeX:%d/sizeY:%d/ip:%s/port:%d/interface:%s/bufferSize:%d/hardFpsLimiter:%f/affinity:%d\n",
       globalConfig->streamers[i].offsetX,
       globalConfig->streamers[i].offsetY,
       globalConfig->streamers[i].sizeX,
@@ -141,7 +141,10 @@ static bool updateConfig(cJSON *parent, const char *attribute, void *structData,
   cJSON *child = cJSON_GetObjectItem(parent,attribute);
   
   if(child == NULL)
+  {
+    ERR("Cannot get attribute %s",attribute);
     return false;
+  }
 
   /*
    * C struct int and float members are 4-bytes aligned, aren't they?
