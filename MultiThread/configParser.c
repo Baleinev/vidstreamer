@@ -69,17 +69,18 @@ void printConfig(globalConfig_t *globalConfig)
   int cpuCount = CPU_COUNT(&(globalConfig->grabber.affinity));
 
   LOG("Grabber config:");
-  LOG("hardFpsLimiter/waitForAll/nbStreamers/affinity: \n%f,\n%d,\n%d,\n%d",
+  LOG("hardFpsLimiter:%f/waitForAll:%d/nbStreamers:%d/affinity:%d\n",
     globalConfig->grabber.hardFpsLimiter,
     globalConfig->grabber.waitForAll,
     globalConfig->grabber.nbStreamers,
-    globalConfig->grabber.affinity,
     cpuCount);
 
   for(i=0;i<globalConfig->grabber.nbStreamers;i++)
   {
+    cpuCount = CPU_COUNT(&(globalConfig->streamers[i].affinity));
+
     LOG("Streamer %d config:",i);
-    LOG("offsetX/offsetY/sizeX/sizeY/ip/port/interface/bufferSize/hardFpsLimiter/affinity: \n%d,\n%d,\n%d,\n%d,\n%s,\n%d,\n%s,\n%d,\n%f",
+    LOG("offsetX:%d/offsetY:%d/sizeX:%d/sizeY:%d/ip:%s/port:%d/interface:%s/bufferSize:%d/hardFpsLimiter:%f/affinity%d\n",
       globalConfig->streamers[i].offsetX,
       globalConfig->streamers[i].offsetY,
       globalConfig->streamers[i].sizeX,
@@ -88,9 +89,10 @@ void printConfig(globalConfig_t *globalConfig)
       globalConfig->streamers[i].port,   
       globalConfig->streamers[i].interface,
       globalConfig->streamers[i].bufferSize,
-      globalConfig->streamers[i].hardFpsLimiter);
+      globalConfig->streamers[i].hardFpsLimiter,
+      cpuCount);
 
-    LOG("-> x264 config: threads/fps/keymax/keymin/slicemax/intra/vbvmaxrate/vbvbuffer/rc_method/crf: \n%d,\n%d,\n%d,\n%d,\n%d,\n%d,\n%d,\n%d,\n%d,\n%f",
+    LOG("-> x264 config: threads:%d/fps:%d/keymax:%d/keymin:%d/slicemax:%d/intra:%d/vbvmaxrate:%d/vbvbuffer:%d/rc_method:%d/crf:%f\n",
       globalConfig->streamers[i].x264params.i_threads,
       globalConfig->streamers[i].x264params.i_fps_num,
       globalConfig->streamers[i].x264params.i_keyint_max,
