@@ -223,15 +223,15 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
     int nbAffinity;
 
     /* Copy affinity array */
-    if((affinity != NULL && ((nbAffinity = cJSON_GetArraySize(affinity))>0))
+    if((affinity != NULL && ((nbAffinity = cJSON_GetArraySize(affinity))>0)))
     {
       unsigned int affinityByteField = 0;
 
       for(j=0;j<nbAffinity;j++)
       {
-        DBG("Adding affinity to CPU %d",subitem->valueint);
-
         cJSON * subitem = cJSON_GetArrayItem(affinity, j);
+
+        DBG("Adding affinity to CPU %d",subitem->valueint);
 
         affinityByteField &= 0x1 << subitem->valueint;
       }
