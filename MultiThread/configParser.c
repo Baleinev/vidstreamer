@@ -46,6 +46,8 @@ static void setDefaultX264paramConfig(x264_param_t *x264params)
   x264_param_default_preset(x264params, "ultrafast", "zerolatency");
 
   x264params->i_threads = 1;
+  x264params->i_width = 640;
+  x264params->i_height = 480;  
   x264params->i_fps_num = 30;
   x264params->i_fps_den = 1;
   x264params->i_keyint_max = 60;
@@ -273,6 +275,9 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
 
         if(x264params != NULL)
         {
+          updateConfig(source,"sizeX",&(globalConfig->streamers[i].x264params.i_width),NUMBER);      
+          updateConfig(source,"sizeY",&(globalConfig->streamers[i].x264params.i_height),NUMBER);      
+
           updateConfig(x264params,"threads",&(globalConfig->streamers[i].x264params.i_threads),NUMBER);      
           updateConfig(x264params,"fps",&(globalConfig->streamers[i].x264params.i_fps_num),NUMBER);      
           updateConfig(x264params,"maxKeyint",&(globalConfig->streamers[i].x264params.i_keyint_max),NUMBER);      
