@@ -135,11 +135,11 @@ void *threadVideoStream(void * param)
     goto FAIL_SWS_GETCONTEXT;
   }
 
-  gettimeofday(&now,NULL);
+  gettimeofday(&last,NULL);
 
   while(!flagQuit)
   {
-    last = now;
+    // last = now;
     gettimeofday(&now,NULL);
 
     pthread_mutex_lock(&mutexCapturedFrame);
@@ -227,7 +227,20 @@ void *threadVideoStream(void * param)
       *(nals[0].p_payload+5) = 0x64; 
 
     alreadySent = 0;
-    sent = 0;  
+    sent = 0;
+
+    gettimeofday(&now,NULL);  
+
+    double delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
+
+    last.tv_usec = now.tv_usec;
+    last.tv_sec = now.tv_sec;
+
+    if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
+    {
+      LOG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter-delta));      
+      usleep((unsigned int)(((1000/config->hardFpsLimiter)-delta)*1000));
+    }
 
     do
     {
@@ -254,16 +267,11 @@ void *threadVideoStream(void * param)
     DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
     DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);
 
-    int delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
 
-    DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
+    // DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
 
 
-    if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
-    {
-      LOG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter-delta));      
-      usleep((unsigned int)(((1000/config->hardFpsLimiter)-delta)*1000));
-    }
+
   }
   LOG("Exiting normally");
 
