@@ -255,8 +255,6 @@ void *threadVideoStream(void * param)
 
     int delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
 
-    last = now;    
-
     DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
@@ -265,6 +263,7 @@ void *threadVideoStream(void * param)
       usleep((unsigned int)(((1000/config->hardFpsLimiter)-delta)*1000));
     }
 
+    last = now;    
 
   }
   LOG("Exiting normally");
