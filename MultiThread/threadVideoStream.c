@@ -257,7 +257,7 @@ void *threadVideoStream(void * param)
 
     last = now;    
 
-    DBG("Time total: %ld ms",delta);
+    DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
