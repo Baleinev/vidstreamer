@@ -229,16 +229,18 @@ void *threadVideoStream(void * param)
     alreadySent = 0;
     sent = 0;
 
-    gettimeofday(&now,NULL);  
+    gettimeofday(&now,NULL);
 
     double delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
+
+    LOG("Delta: %f",delta);
 
     last.tv_usec = now.tv_usec;
     last.tv_sec = now.tv_sec;
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
-      LOG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter-delta));      
+      LOG("Sleeping %d ms",(unsigned int)(delta - 1000/config->hardFpsLimiter));      
       usleep((unsigned int)(((1000/config->hardFpsLimiter)-delta)*1000));
     }
 
