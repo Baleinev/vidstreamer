@@ -235,14 +235,19 @@ void *threadVideoStream(void * param)
 
     LOG("Delta: %f",delta);
 
-    last.tv_usec = now.tv_usec;
-    last.tv_sec = now.tv_sec;
+
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
       LOG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
       usleep((unsigned int)((1000/config->hardFpsLimiter - delta)*1000));
     }
+    
+    gettimeofday(&now,NULL);
+
+
+    last.tv_usec = now.tv_usec;
+    last.tv_sec = now.tv_sec;    
 
     do
     {
