@@ -135,7 +135,7 @@ void *threadVideoStream(void * param)
     goto FAIL_SWS_GETCONTEXT;
   }
 
-  gettimeofday(&last,NULL);
+  gettimeofday(&now,NULL);
 
   while(!flagQuit)
   {
