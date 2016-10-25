@@ -241,7 +241,7 @@ void *threadVideoStream(void * param)
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
       LOG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
-      usleep((unsigned int)(1000/config->hardFpsLimiter - delta));
+      usleep((unsigned int)((1000/config->hardFpsLimiter - delta)*1000);
     }
 
     do
