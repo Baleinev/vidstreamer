@@ -229,26 +229,6 @@ void *threadVideoStream(void * param)
     alreadySent = 0;
     sent = 0;
 
-    gettimeofday(&now,NULL);
-
-    double delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
-
-    LOG("Delta: %f",delta);
-
-
-
-    if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
-    {
-      LOG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
-      usleep((unsigned int)((1000/config->hardFpsLimiter - delta)*1000));
-    }
-    
-    gettimeofday(&now,NULL);
-
-
-    last.tv_usec = now.tv_usec;
-    last.tv_sec = now.tv_sec;    
-
     do
     {
       sent = sendto(
@@ -273,6 +253,27 @@ void *threadVideoStream(void * param)
 
     DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
     DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);
+
+
+    gettimeofday(&now,NULL);
+
+    double delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
+
+    LOG("Delta: %f",delta);
+
+
+
+    if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
+    {
+      LOG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
+      usleep((unsigned int)((1000/config->hardFpsLimiter - delta)*1000));
+    }
+    
+    gettimeofday(&now,NULL);
+
+
+    last.tv_usec = now.tv_usec;
+    last.tv_sec = now.tv_sec;  
 
 
     // DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
