@@ -139,7 +139,8 @@ void *threadVideoStream(void * param)
 
   while(!flagQuit)
   {
-    last = now;    
+    last = now;
+
     gettimeofday(&now,NULL);
 
     pthread_mutex_lock(&mutexCapturedFrame);
@@ -249,23 +250,21 @@ void *threadVideoStream(void * param)
       
     } while (sent != -1 && alreadySent != frameSize);
 
+    last = timeSend;
     gettimeofday(&timeSend,NULL);
 
     DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
     DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);
 
-    int delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
+    int delta = (timeSend.tv_sec-last.tv_sec)*1000+(timeSend.tv_usec-last.tv_usec)/1000;
 
-    DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
-
+    // DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
       LOG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter-delta));      
       usleep((unsigned int)(((1000/config->hardFpsLimiter)-delta)*1000));
     }
-
-
   }
   LOG("Exiting normally");
 
