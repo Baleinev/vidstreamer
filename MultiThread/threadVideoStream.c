@@ -73,7 +73,7 @@ void *threadVideoStream(void * param)
     ERR("Cannot set affinity. errno:%d",errno);
   }
 
-  if(setpriority(getpid(),gettid(), config->niceness) != 0)
+  if(setpriority(PRIO_PROCESS,gettid(), config->niceness) != 0)
   {
     ERR("Cannot set niceness. errno:%d",errno);
   }
