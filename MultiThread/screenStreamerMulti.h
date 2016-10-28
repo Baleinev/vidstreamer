@@ -34,7 +34,7 @@ typedef struct streamerConfig_t
   float hardFpsLimiter;
   x264_param_t x264params;
   cpu_set_t affinity;
-
+  int niceness;
 
 } streamerConfig_t;
 
@@ -45,6 +45,8 @@ typedef struct grabberConfig_t
   bool waitForAll;
   unsigned int nbStreamers;
   cpu_set_t affinity;
+  int niceness;
+
 
 } grabberConfig_t;
 

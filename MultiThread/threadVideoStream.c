@@ -68,7 +68,15 @@ void *threadVideoStream(void * param)
   struct sockaddr_in si_other;
   int sendingSocket, slen = sizeof(si_other);
 
-  pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(config->affinity));        
+  if(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(config->affinity)) != 0)
+  {
+    ERR("Cannot set affinity. errno:%d",errno);
+  }
+
+  if(setpriority(getpid(),gettid(), config->niceness) != 0)
+  {
+    ERR("Cannot set niceness. errno:%d",errno);
+  }
 
   if ((sendingSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
   {

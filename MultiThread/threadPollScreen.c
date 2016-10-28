@@ -61,7 +61,15 @@ void *threadPollScreen(void * param)
   const unsigned int xOffset = 0;
   const unsigned int yOffset = 0;
 
-  pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(config->affinity));        
+  if(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(config->affinity)) != 0)
+  {
+    ERR("Cannot set affinity. errno:%d",errno);
+  }
+  
+  if(setpriority(getpid(),gettid(), config->niceness) != 0)
+  {
+    ERR("Cannot set niceness. errno:%d",errno);
+  }
 
   if((dpy = XOpenDisplay(displayName)) == NULL)
   {
@@ -175,20 +183,23 @@ void *threadPollScreen(void * param)
     gettimeofday(&timeWait,NULL);
     DBG("Time waiting: %ld ms",(timeWait.tv_sec-timeGrab.tv_sec)*1000+(timeWait.tv_usec-timeGrab.tv_usec)/1000);
 
-    /*
-     * If time elapsed is less than the interframe time, sleep a little bit.
-     */
-    unsigned int delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
+    gettimeofday(&now,NULL);
 
-    DBG("Time total: %ld ms",delta);
+    double delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
+
+    DBG("Delta: %f",delta);
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
-      LOG("Sleeping %d ms",delta);      
-      usleep(delta*1000);
+      DBG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
+      usleep((unsigned int)((1000/config->hardFpsLimiter - delta)*1000));
     }
+    
+    gettimeofday(&now,NULL);
 
-    last = now;
+
+    last.tv_usec = now.tv_usec;
+    last.tv_sec = now.tv_sec;  
   }
 
   LOG("Exiting normally");
