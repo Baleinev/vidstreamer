@@ -121,6 +121,8 @@ static void setDefaultStreamerConfig(streamerConfig_t *streamerConfig)
   streamerConfig->sizeX = 640;
   streamerConfig->sizeY = 480;
 
+  streamerConfig->niceness = 0;
+
   strncpy(streamerConfig->ip,"127.0.0.1",IPSTRING_MAXLENGTH);
   strncpy(streamerConfig->interface,"eth0",INTERFACENAME_MAXLENGTH);
 
@@ -137,6 +139,7 @@ static void setDefaultGrabberConfig(grabberConfig_t *grabberConfig)
 {
   grabberConfig->hardFpsLimiter = -1.0;
   grabberConfig->waitForAll = false;
+  grabberConfig->niceness = 0;
 
   setAffinity(&(grabberConfig->affinity),(unsigned int)0x00000001);  
 }
@@ -198,7 +201,6 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
 
   fclose(confHandle);
 
-
   cJSON *root = cJSON_Parse(buffer);
 
   if(root == NULL)
@@ -217,7 +219,8 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
   if(grabber)
   {
     updateConfig(grabber,"hardFpsLimiter",&(globalConfig->grabber.hardFpsLimiter),FLOAT);      
-    updateConfig(grabber,"waitForAll",&(globalConfig->grabber.waitForAll),BOOL); 
+    updateConfig(grabber,"waitForAll",&(globalConfig->grabber.waitForAll),BOOL);
+    updateConfig(grabber,"niceness",&(globalConfig->grabber.niceness),NUMBER);
 
     cJSON *affinity = cJSON_GetObjectItem(grabber,"affinity");
     int nbAffinity;
@@ -256,7 +259,9 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
 
       setDefaultStreamerConfig(&(globalConfig->streamers[i]));
 
-      cJSON *affinity = cJSON_GetObjectItem(streamer,"affinity");
+      cJSON *affinity = cJSON_GetObjectItem(streamer,"affinity");    
+      updateConfig(streamer,"niceness",&(globalConfig->streamers[i].niceness),NUMBER);      
+
 
       /* Copy affinity array */
       if((affinity != NULL && ((nbAffinity = cJSON_GetArraySize(affinity))>0)))

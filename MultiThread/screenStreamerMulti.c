@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <jpeglib.h>
 
+#include <sys/syscall.h>
+
 #include <x264.h>
 
 #include "screenStreamerMulti.h"
@@ -68,6 +70,10 @@ pthread_t *streamers; //[MAX_STREAMERS];
 // };
 // unsigned int targetPort[5] = {4243,4243,4243,4243,4243};
 
+int gettid()
+{
+  return syscall(SYS_gettid);
+}
 
 dumpRGBAjpeg(unsigned char *data,unsigned int width,unsigned int height,const char *name)
 {

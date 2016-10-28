@@ -21,6 +21,8 @@
 #define IPSTRING_MAXLENGTH 128
 #define INTERFACENAME_MAXLENGTH 128
 
+int gettid();
+
 typedef struct streamerConfig_t
 {
   unsigned int offsetX;
