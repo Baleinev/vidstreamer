@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <sys/shm.h>
 #include <sys/socket.h>
+#include <sys/resource.h>
 
 #include <arpa/inet.h>
 
@@ -65,7 +66,7 @@ void *threadPollScreen(void * param)
   {
     ERR("Cannot set affinity. errno:%d",errno);
   }
-  
+
   if(setpriority(PRIO_PROCESS,gettid(), config->niceness) != 0)
   {
     ERR("Cannot set niceness. errno:%d",errno);
