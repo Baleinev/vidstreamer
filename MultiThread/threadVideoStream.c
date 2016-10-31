@@ -232,8 +232,8 @@ void *threadVideoStream(void * param)
     /*
      * Set manually IDR header for intra refresh?
      */
-    if(config->x264params.b_intra_refresh)
-      *(nals[0].p_payload+5) = 0x64; 
+    // if(config->x264params.b_intra_refresh)
+    //   *(nals[0].p_payload+5) = 0x64; 
 
     alreadySent = 0;
     sent = 0;
