@@ -55,7 +55,7 @@ static void setDefaultX264paramConfig(x264_param_t *x264params)
   x264params->i_height = 480;  
   x264params->i_fps_num = 30;
   x264params->i_fps_den = 1;
-  x264params->i_keyint_max = 60;
+  // x264params->i_keyint_max = 60;
   x264params->b_intra_refresh = 0;
   x264params->rc.i_rc_method = X264_RC_CRF;
   x264params->rc.f_rf_constant = 25;
