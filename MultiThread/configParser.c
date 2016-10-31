@@ -60,8 +60,8 @@ static void setDefaultX264paramConfig(x264_param_t *x264params)
   x264params->rc.i_rc_method = X264_RC_CRF;
   x264params->rc.f_rf_constant = 25;
   // x264defaultParam.i_slice_max_size = MAX_UDP_SIZE;
-  x264params->rc.i_vbv_max_bitrate = 20000;
-  x264params->rc.i_vbv_buffer_size = 1;
+  // x264params->rc.i_vbv_max_bitrate = 200000;
+  // x264params->rc.i_vbv_buffer_size = 1;
   // x264defaultParam.b_annexb = 1; 
 
   x264_param_apply_profile(x264params, "baseline");  
