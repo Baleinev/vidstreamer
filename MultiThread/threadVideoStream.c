@@ -84,7 +84,7 @@ void *threadVideoStream(void * param)
   }
 
   int i;
-  int senderArraySize = cJSON_GetArraySize(config->senders);
+  int senderArraySize = config->nbSenders;
 
   LOG("This stream has %d senders.",senderArraySize);
 
@@ -244,7 +244,7 @@ void *threadVideoStream(void * param)
      */
     // if(config->x264params.b_intra_refresh)
     //   *(nals[0].p_payload+5) = 0x64; 
-
+nbSenders
     for(i=0;i<senderArraySize;i++)
     {
       alreadySent = 0;
