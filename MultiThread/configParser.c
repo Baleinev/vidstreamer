@@ -74,7 +74,7 @@ void printConfig(globalConfig_t *globalConfig)
   int cpuCount = CPU_COUNT(&(globalConfig->grabber.affinity));
 
   LOG("Grabber config:");
-  LOG("hardFpsLimiter:%f/waitForAll:%d/nbStreamers:%d/affinity:%d\n",
+  LOG("hardFpsLimiter:%f/waitForAll:%d/nbStreamers:%d/affinity:%d",
     globalConfig->grabber.hardFpsLimiter,
     globalConfig->grabber.waitForAll,
     globalConfig->grabber.nbStreamers,
@@ -264,6 +264,8 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
     globalConfig->grabber.nbStreamers = nbStreamers;
     globalConfig->streamers = (streamerConfig_t *)malloc(sizeof(streamerConfig_t)*nbStreamers);
 
+    LOG("Found %d streams",nbStreamers);      
+
     /* For each streamer */
     for(i=0;i<nbStreamers;i++)
     {
@@ -336,6 +338,9 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
 
         goto FAIL_SENDER;
       }
+      
+      LOG("Found %d senders for stream %d",nbSenders,i);      
+      
       globalConfig->streamers[i].nbSenders = nbSenders;
       globalConfig->streamers[i].senders = (senderConfig_t *)malloc(sizeof(senderConfig_t)*nbSenders);      
 
