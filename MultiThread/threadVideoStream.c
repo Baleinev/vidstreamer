@@ -268,7 +268,7 @@ void *threadVideoStream(void * param)
           alreadySent += sent;
         
       } while (sent != -1 && alreadySent != frameSize);
-      LOG("Sent to %s",config->senders[i].ip)
+      // LOG("Sent to %s",config->senders[i].ip)
     }
 
     DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
