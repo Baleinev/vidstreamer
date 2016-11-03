@@ -68,7 +68,7 @@ void *threadVideoStream(void * param)
   int alreadySent = 0;
   int sent = 0;
 
-  struct sockaddr_in si_other;
+  struct sockaddr_in si_other[MAX_SENDING_SOCKETS];
   int sendingSocket[MAX_SENDING_SOCKETS];
   int slen = sizeof(si_other);
 
@@ -106,13 +106,13 @@ void *threadVideoStream(void * param)
       goto FAIL_SOCKET_INTERFACE;
     }  
   
-    memset((char *) &si_other, 0, sizeof(si_other));
-    si_other.sin_family = AF_INET;
-    si_other.sin_port = htons(config->senders[i].port);
+    memset((char *) &(si_other[i]), 0, sizeof(si_other[i]));
+    si_other[i].sin_family = AF_INET;
+    si_other[i].sin_port = htons(config->senders[i].port);
 
     LOG("[Sender %d] Sending to %s:%d",i,config->senders[i].ip,config->senders[i].port);
      
-    if (inet_aton(config->senders[i].ip , &si_other.sin_addr) == 0)
+    if (inet_aton(config->senders[i].ip , &(si_other[i]).sin_addr) == 0)
     {
       ERR("[Sender %d] Cannot convert string to ip: %s",i,config->senders[i].ip);
       goto FAIL_INET_ATON;
@@ -256,7 +256,7 @@ void *threadVideoStream(void * param)
           nals[0].p_payload+alreadySent,
           (frameSize-alreadySent) > MAX_UDP_SIZE ? MAX_UDP_SIZE : frameSize - alreadySent,
           0,
-          (struct sockaddr *) &si_other,
+          (struct sockaddr *) &(si_other[i]),
           slen);
 
         if(sent < 0)
