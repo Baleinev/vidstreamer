@@ -70,7 +70,6 @@ void *threadVideoStream(void * param)
 
   struct sockaddr_in si_other;
   int sendingSocket[MAX_SENDING_SOCKETS];
-  int nbSockets;
   int slen = sizeof(si_other);
 
   if(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(config->affinity)) != 0)
@@ -269,6 +268,7 @@ void *threadVideoStream(void * param)
           alreadySent += sent;
         
       } while (sent != -1 && alreadySent != frameSize);
+      LOG("Sent to %s",config->senders[i].ip)
     }
 
     DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
