@@ -85,7 +85,7 @@ void printConfig(globalConfig_t *globalConfig)
     cpuCount = CPU_COUNT(&(globalConfig->streamers[i].affinity));
 
     LOG("Streamer %d config:",i);
-    LOG("offsetX:%d/offsetY:%d/sizeX:%d/sizeY:%d/ip:%s/port:%d/interface:%s/bufferSize:%d/hardFpsLimiter:%f/affinity:%d",
+    LOG("offsetX:%d/offsetY:%d/sizeX:%d/sizeY:%d/hardFpsLimiter:%f/affinity:%d",
       globalConfig->streamers[i].offsetX,
       globalConfig->streamers[i].offsetY,
       globalConfig->streamers[i].sizeX,
