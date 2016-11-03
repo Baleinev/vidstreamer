@@ -92,18 +92,18 @@ void *threadVideoStream(void * param)
   {
     if ((sendingSocket[i] = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
     {
-      ERR("Cannot open sending socket:%d errno:%d",sendingSocket[i],errno);
+      ERR("[Sender %d] Cannot open sending socket:%d errno:%d",i,sendingSocket[i],errno);
       goto FAIL_SOCKET;
     }
 
     if(setsockopt(sendingSocket[i], SOL_SOCKET, SO_SNDBUF, &(config->senders[i].bufferSize), sizeof(config->senders[i].bufferSize)) < 0)
     {
-      ERR("Cannot setsockopt. Non-fatal, but the latency will suffer if the UDP send buffer is too big.");
+      ERR("[Sender %d] Cannot setsockopt. Non-fatal, but the latency will suffer if the UDP send buffer is too big.",i);
     }
 
     if(setsockopt(sendingSocket[i], SOL_SOCKET, SO_BINDTODEVICE, config->senders[i].interface, strlen(config->senders[i].interface)) < 0)
     {
-      ERR("Cannot bind to selected interface: %s",config->senders[i].interface);
+      ERR("[Sender %d] Cannot bind to selected interface: %s",i,config->senders[i].interface);
       goto FAIL_SOCKET_INTERFACE;
     }  
   
@@ -111,11 +111,11 @@ void *threadVideoStream(void * param)
     si_other.sin_family = AF_INET;
     si_other.sin_port = htons(config->senders[i].port);
 
-    LOG("Sending to %s:%d",config->senders[i].ip,config->senders[i].port);
+    LOG("[Sender %d] Sending to %s:%d",i,config->senders[i].ip,config->senders[i].port);
      
     if (inet_aton(config->senders[i].ip , &si_other.sin_addr) == 0)
     {
-      ERR("Cannot convert string to ip: %s",config->senders[i].ip);
+      ERR("[Sender %d] Cannot convert string to ip: %s",i,config->senders[i].ip);
       goto FAIL_INET_ATON;
     }
   }
@@ -275,7 +275,6 @@ void *threadVideoStream(void * param)
     DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);    
 
     gettimeofday(&timeSend,NULL);
-
 
     gettimeofday(&now,NULL);
 
