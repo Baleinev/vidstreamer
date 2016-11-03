@@ -122,10 +122,10 @@ void *threadPollScreen(void * param)
   bytesPerPixelSrc = (image->bits_per_pixel)/8;
   bytesPerLineSrc = image->bytes_per_line;
 
-  LOG("Frame bytes per pixel: %d\n",bytesPerPixelSrc);  
-  LOG("Frame bytes per line: %d\n",bytesPerLineSrc);  
-  LOG("Frame size: %d Kib\n",frameSize/1024);
-  LOG("Frame masks (rgb): 0x%.8lx,0x%.8lx,0x%.8lx\n",image->red_mask,image->green_mask,image->blue_mask);
+  LOG("Frame bytes per pixel: %d",bytesPerPixelSrc);  
+  LOG("Frame bytes per line: %d",bytesPerLineSrc);  
+  LOG("Frame size: %d Kib",frameSize/1024);
+  LOG("Frame masks (rgb): 0x%.8lx,0x%.8lx,0x%.8lx",image->red_mask,image->green_mask,image->blue_mask);
 
   if((shminfo.shmid = shmget(IPC_PRIVATE, frameSize,IPC_CREAT | 0777)) < 0)
   {
