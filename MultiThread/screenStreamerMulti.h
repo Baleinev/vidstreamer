@@ -12,7 +12,7 @@
 #include <x264.h>
 
 #define DBG(fmt,...) do{/*fprintf(stdout,"[%s][%s][%d]",__FILE__,__FUNCTION__,__LINE__);fprintf(stdout,fmt,##__VA_ARGS__);fprintf(stdout,"\n");fflush(stdout);*/}while(0);
-#define ERR(fmt,...) do{fprintf(stderr,"[%s][%s][%d]",__FILE__,__FUNCTION__,__LINE__);fprintf(stderr,fmt,##__VA_ARGS__);fprintf(stderr,"\n");fflush(stderr);}while(0);
+#define ERR(fmt,...) do{fprintf(stderr,"[%s][%s][%d][ERROR]",__FILE__,__FUNCTION__,__LINE__);fprintf(stderr,fmt,##__VA_ARGS__);fprintf(stderr,"\n");fflush(stderr);}while(0);
 #define LOG(fmt,...) do{fprintf(stdout,"[%s][%s][%d]",__FILE__,__FUNCTION__,__LINE__);fprintf(stdout,fmt,##__VA_ARGS__);fprintf(stdout,"\n");fflush(stdout);}while(0);
 
 #define MAX_UDP_SIZE 1472
@@ -20,8 +20,17 @@
 #define CONFIG_DISPLAYNAME_MAXLENGTH 128
 #define IPSTRING_MAXLENGTH 128
 #define INTERFACENAME_MAXLENGTH 128
+#define MAX_SENDERS 16 
 
 int gettid();
+
+typedef struct senderConfig_t
+{
+  char ip[IPSTRING_MAXLENGTH];
+  unsigned int port;
+  char interface[INTERFACENAME_MAXLENGTH];
+  unsigned int bufferSize;
+} senderConfig_t;
 
 typedef struct streamerConfig_t
 {
@@ -29,13 +38,11 @@ typedef struct streamerConfig_t
   unsigned int offsetY;
   unsigned int sizeX;
   unsigned int sizeY;
-  char ip[IPSTRING_MAXLENGTH];
-  unsigned int port;
-  char interface[INTERFACENAME_MAXLENGTH];
-  unsigned int bufferSize;
-  float hardFpsLimiter;
+  unsigned int nbSenders;  
+  senderConfig_t *senders;
   x264_param_t x264params;
   cpu_set_t affinity;
+  float hardFpsLimiter;  
   int niceness;
 
 } streamerConfig_t;

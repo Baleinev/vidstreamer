@@ -113,7 +113,7 @@ dumpRGBAjpeg(unsigned char *data,unsigned int width,unsigned int height,const ch
 
 int main(int argc,char *argv[])
 {
-  int i;
+  int i,j;
   int c;
 
   opterr = 0;
@@ -122,8 +122,6 @@ int main(int argc,char *argv[])
   cpu_set_t cpuset;
 
   x264_param_t x264defaultParam;  
-
-  streamerConfig_t *streamerConfig;
 
   static struct termios oldt, newt;  
 
@@ -191,43 +189,6 @@ int main(int argc,char *argv[])
   }
 
   printConfig(&globalConfig);
-
-  // for (i = optind; i < argc; i++)
-    // printf ("Non-option argument %s\n", argv[i]);
-
-  // if(nbEncoders < 1 || nbEncoders > MAX_ENCODERS)
-  // {
-  //   ERR("Invalid requested number of encoders: %d ",nbEncoders);
-  //   goto FAIL_NBENCODERS;
-  // }
-  
-
-
-  /*
-   * Prepare config struct for every encoder thread
-   */
-  // if((streamerConfig = (streamerConfig_t *)(malloc(sizeof(streamerConfig_t)*nbEncoders))) == NULL)
-  // {
-  //   ERR("Cannot malloc %ld bytes for streamerConfig",sizeof(streamerConfig_t)*nbEncoders);
-  //   goto FAIL_MALLOCCONFIG;
-  // }
-
-  // for(i=0;i < nbEncoders;i++)
-  // {
-  //   streamerConfig[i].xOffset = xOffset[i];
-  //   streamerConfig[i].yOffset = yOffset[i];
-  //   streamerConfig[i].width = width[i];
-  //   streamerConfig[i].height = height[i];
-  //   streamerConfig[i].targetPort = targetPort[i];
-
-  //   strncpy(streamerConfig[i].interface,i%2 ? "eth0" : "eth1", 32);
-  //   strncpy(streamerConfig[i].targetHost,targetHost[i],128);
-  //   memcpy(&(streamerConfig[i].x264param),&x264defaultParam,sizeof(x264_param_t));
-
-  //   streamerConfig[i].x264param.i_width = streamerConfig[i].width;
-  //   streamerConfig[i].x264param.i_height = streamerConfig[i].height;
-  // }
-  // 
   
   streamers = (pthread_t *)malloc(sizeof(pthread_t)*globalConfig.grabber.nbStreamers);
 
@@ -239,40 +200,12 @@ int main(int argc,char *argv[])
   }
 
   /*
-   * If multi core system, keep the first core for the poller
-   */
-  // if(flagAffinity)
-  // {
-  //   if((num_cores = sysconf(_SC_NPROCESSORS_ONLN)) > 1)
-  //   {
-  //     LOG("Setting affinity. %d detected cores",num_cores);
-
-  //     CPU_ZERO(&cpuset);
-  //     CPU_SET(0, &cpuset);
-
-  //     pthread_setaffinity_np(poller, sizeof(cpu_set_t), &cpuset);      
-
-  //     CPU_ZERO(&cpuset);
-
-  //     for(i=1;i<num_cores;i++)
-  //       CPU_SET(i, &cpuset);
-
-  //     for(i=0;i < nbEncoders;i++)
-  //       pthread_setaffinity_np(encoders[i], sizeof(cpu_set_t), &cpuset);      
-      
-  //   }
-  //   else if(num_cores != 1)
-  //   {
-  //     ERR("Cannot detect numbers of cores: %d. Cannot set affinity. Not fatal but performance will suffer.",num_cores);
-  //   }
-  // }
-  /*
    * Configure the terminal so any key press will be processed imediately (without the need of a return)
    */
   tcgetattr( STDIN_FILENO, &oldt);
   newt = oldt;
   newt.c_lflag &= ~(ICANON);          
-  tcsetattr( STDIN_FILENO, TCSANOW, &newt);  
+  tcsetattr( STDIN_FILENO, TCSANOW, &newt);
 
   LOG("Press any key to quit");
 
@@ -285,11 +218,17 @@ int main(int argc,char *argv[])
   pthread_cond_broadcast(&condDataConsummed);
   pthread_cond_broadcast(&condDataAvailable);
 
-
   for(i=0;i< globalConfig.grabber.nbStreamers;i++)
     pthread_join(streamers[i],NULL);
 
-  free(streamerConfig);
+  for(i=0;i<globalConfig.grabber.nbStreamers;i++)
+  {
+    for(j=0;j<globalConfig.streamers[i].nbSenders;j++)
+      free(globalConfig.streamers[i].senders);
+
+  }
+
+  free(globalConfig.streamers);
 
   FAIL_MALLOCCONFIG:
   FAIL_NBENCODERS:

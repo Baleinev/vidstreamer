@@ -69,7 +69,7 @@ static void setDefaultX264paramConfig(x264_param_t *x264params)
 
 void printConfig(globalConfig_t *globalConfig)
 {
-  int i;
+  int i,j;
 
   int cpuCount = CPU_COUNT(&(globalConfig->grabber.affinity));
 
@@ -85,19 +85,25 @@ void printConfig(globalConfig_t *globalConfig)
     cpuCount = CPU_COUNT(&(globalConfig->streamers[i].affinity));
 
     LOG("Streamer %d config:",i);
-    LOG("offsetX:%d/offsetY:%d/sizeX:%d/sizeY:%d/ip:%s/port:%d/interface:%s/bufferSize:%d/hardFpsLimiter:%f/affinity:%d\n",
+    LOG("offsetX:%d/offsetY:%d/sizeX:%d/sizeY:%d/ip:%s/port:%d/interface:%s/bufferSize:%d/hardFpsLimiter:%f/affinity:%d",
       globalConfig->streamers[i].offsetX,
       globalConfig->streamers[i].offsetY,
       globalConfig->streamers[i].sizeX,
       globalConfig->streamers[i].sizeY,
-      globalConfig->streamers[i].ip,                  
-      globalConfig->streamers[i].port,   
-      globalConfig->streamers[i].interface,
-      globalConfig->streamers[i].bufferSize,
       globalConfig->streamers[i].hardFpsLimiter,
       cpuCount);
 
-    LOG("-> x264 config: threads:%d/fps:%d/keymax:%d/keymin:%d/slicemax:%d/intra:%d/vbvmaxrate:%d/vbvbuffer:%d/rc_method:%d/crf:%f\n",
+    for(j=0;j<globalConfig->streamers[i].nbSenders;j++)
+    {
+      LOG("Sender %d:ip:%s/port:%d/interface:%s/bufferSize:%d",      
+        j,
+        globalConfig->streamers[i].senders[j].ip,                  
+        globalConfig->streamers[i].senders[j].port,   
+        globalConfig->streamers[i].senders[j].interface,
+        globalConfig->streamers[i].senders[j].bufferSize);
+    }
+
+    LOG("-> x264 config: threads:%d/fps:%d/keymax:%d/keymin:%d/slicemax:%d/intra:%d/vbvmaxrate:%d/vbvbuffer:%d/rc_method:%d/crf:%f",
       globalConfig->streamers[i].x264params.i_threads,
       globalConfig->streamers[i].x264params.i_fps_num,
       globalConfig->streamers[i].x264params.i_keyint_max,
@@ -112,6 +118,15 @@ void printConfig(globalConfig_t *globalConfig)
   }
 }
 
+static void setDefaultSenderConfig(senderConfig_t *senderConfig)
+{
+  strncpy(senderConfig->ip,"127.0.0.1",IPSTRING_MAXLENGTH);
+  strncpy(senderConfig->interface,"eth0",INTERFACENAME_MAXLENGTH);
+
+  senderConfig->port = 4243;
+  senderConfig->bufferSize = 1024*1024*32;
+}
+
 static void setDefaultStreamerConfig(streamerConfig_t *streamerConfig)
 {
   int i;
@@ -123,14 +138,11 @@ static void setDefaultStreamerConfig(streamerConfig_t *streamerConfig)
 
   streamerConfig->niceness = 0;
 
-  strncpy(streamerConfig->ip,"127.0.0.1",IPSTRING_MAXLENGTH);
-  strncpy(streamerConfig->interface,"eth0",INTERFACENAME_MAXLENGTH);
 
-  streamerConfig->port = 4243;
-  streamerConfig->bufferSize = 1024*1024*32;
   streamerConfig->hardFpsLimiter = -1.0;
 
   setDefaultX264paramConfig(&(streamerConfig->x264params));
+
 
   setAffinity(&(streamerConfig->affinity),(unsigned int)0xFFFFFFFFE);
 }
@@ -315,15 +327,32 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
         updateConfig(encoding,"hardFpsLimiter",&(globalConfig->streamers[i].hardFpsLimiter),FLOAT); 
       }
 
-      cJSON *sending = cJSON_GetObjectItem(streamer,"sending");
-      
-      if(sending != NULL)
+      cJSON *sendingArray = cJSON_GetObjectItem(streamer,"sending");
+      int nbSenders = cJSON_GetArraySize(sendingArray);
+
+      if(nbSenders <= 0 || nbSenders > MAX_SENDERS)
       {
-        updateConfig(sending,"ip",&(globalConfig->streamers[i].ip),STRING);      
-        updateConfig(sending,"port",&(globalConfig->streamers[i].port),NUMBER);      
-        updateConfig(sending,"interface",&(globalConfig->streamers[i].interface),STRING);      
-        updateConfig(sending,"bufferSize",&(globalConfig->streamers[i].bufferSize),NUMBER); 
-      }      
+        ERR("Invalid sender count for stream N°%d:%d",i,nbSenders);
+
+        goto FAIL_SENDER;
+      }
+      globalConfig->streamers[i].nbSenders = nbSenders;
+      globalConfig->streamers[i].senders = (senderConfig_t *)malloc(sizeof(senderConfig_t)*nbSenders);      
+
+      for(j=0;j<nbSenders;j++)
+      {
+        cJSON *sending = cJSON_GetArrayItem(sendingArray,j);
+
+        setDefaultSenderConfig(&(globalConfig->streamers[i].senders[j]));
+        
+        if(sending != NULL)
+        {
+          updateConfig(sending,"ip",&(globalConfig->streamers[i].senders[j].ip),STRING);      
+          updateConfig(sending,"port",&(globalConfig->streamers[i].senders[j].port),NUMBER);      
+          updateConfig(sending,"interface",&(globalConfig->streamers[i].senders[j].interface),STRING);      
+          updateConfig(sending,"bufferSize",&(globalConfig->streamers[i].senders[j].bufferSize),NUMBER); 
+        }
+      }
     }
   }
   else
@@ -334,6 +363,7 @@ bool parseConfig(const char *configFile,globalConfig_t *globalConfig)
   }
   return true;
 
+  FAIL_SENDER:
   FAIL_STREAMER:
 
   cJSON_Delete(root);

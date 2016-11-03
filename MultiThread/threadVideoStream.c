@@ -19,6 +19,8 @@
 
 #include "screenStreamerMulti.h"
 
+#define MAX_SENDING_SOCKETS 16
+
 extern unsigned int screenWidth;
 extern unsigned int screenHeight;
 
@@ -67,7 +69,9 @@ void *threadVideoStream(void * param)
   int sent = 0;
 
   struct sockaddr_in si_other;
-  int sendingSocket, slen = sizeof(si_other);
+  int sendingSocket[MAX_SENDING_SOCKETS];
+  int nbSockets;
+  int slen = sizeof(si_other);
 
   if(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(config->affinity)) != 0)
   {
@@ -79,42 +83,46 @@ void *threadVideoStream(void * param)
     ERR("Cannot set niceness. errno:%d",errno);
   }
 
-  if ((sendingSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-  {
-    ERR("Cannot open sending socket:%d errno:%d",sendingSocket,errno);
-    goto FAIL_SOCKET;
-  }
+  int i;
+  int senderArraySize = cJSON_GetArraySize(config->senders);
 
-  if(setsockopt(sendingSocket, SOL_SOCKET, SO_SNDBUF, &(config->bufferSize), sizeof(config->bufferSize)) < 0)
+  for(i=0;i<senderArraySize;i++)
   {
-    ERR("Cannot setsockopt. Non-fatal, but the latency will suffer if the UDP send buffer is too big.");
-  }
+    if ((sendingSocket[i] = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+    {
+      ERR("Cannot open sending socket:%d errno:%d",sendingSocket[i],errno);
+      goto FAIL_SOCKET;
+    }
 
-  if(setsockopt(sendingSocket, SOL_SOCKET, SO_BINDTODEVICE, config->interface, strlen(config->interface)) < 0)
-  {
-      ERR("Cannot bind to selected interface: %s",config->interface);
+    if(setsockopt(sendingSocket[i], SOL_SOCKET, SO_SNDBUF, &(config->senders[i].bufferSize), sizeof(config->senders[i].bufferSize)) < 0)
+    {
+      ERR("Cannot setsockopt. Non-fatal, but the latency will suffer if the UDP send buffer is too big.");
+    }
+
+    if(setsockopt(sendingSocket, SOL_SOCKET, SO_BINDTODEVICE, config->senders[i].interface, strlen(config->senders[i].interface)) < 0)
+    {
+      ERR("Cannot bind to selected interface: %s",config->senders[i].interface);
       goto FAIL_SOCKET_INTERFACE;
-  }  
+    }  
+  
+    memset((char *) &si_other, 0, sizeof(si_other));
+    si_other.sin_family = AF_INET;
+    si_other.sin_port = htons(config->senders[i].port);
 
-  memset((char *) &si_other, 0, sizeof(si_other));
-  si_other.sin_family = AF_INET;
-  si_other.sin_port = htons(config->port);
-
-  LOG("Sending to %s:%d",config->ip,config->port);
-   
-  if (inet_aton(config->ip , &si_other.sin_addr) == 0)
-  {
-    ERR("Cannot convert string to ip: %s",config->ip);
-    goto FAIL_INET_ATON;
+    LOG("Sending to %s:%d",config->senders[i].ip,config->senders[i].port);
+     
+    if (inet_aton(config->senders[i].ip , &si_other.sin_addr) == 0)
+    {
+      ERR("Cannot convert string to ip: %s",config->senders[i].ip);
+      goto FAIL_INET_ATON;
+    }
   }
-
 
   if((encoder = x264_encoder_open(&(config->x264params))) == NULL)
   {
     ERR("Cannot open encoder: %ld",(long unsigned int)encoder);
     goto FAIL_ENCODER;
   }
-
 
   if(x264_picture_alloc(&pic_in, X264_CSP_I420, config->sizeX, config->sizeY) < 0)
   {
@@ -235,33 +243,36 @@ void *threadVideoStream(void * param)
     // if(config->x264params.b_intra_refresh)
     //   *(nals[0].p_payload+5) = 0x64; 
 
-    alreadySent = 0;
-    sent = 0;
-
-    do
+    for(i=0;i<senderArraySize;i++)
     {
-      sent = sendto(
-        sendingSocket,
-        nals[0].p_payload+alreadySent,
-        (frameSize-alreadySent) > MAX_UDP_SIZE ? MAX_UDP_SIZE : frameSize - alreadySent,
-        0,
-        (struct sockaddr *) &si_other,
-        slen);
-
-      if(sent < 0)
+      alreadySent = 0;
+      sent = 0;    
+        
+      do
       {
-        ERR("Sendto returns -1. Errno: %d",errno);
-        break;
-      }
-      else
-        alreadySent += sent;
-      
-    } while (sent != -1 && alreadySent != frameSize);
+        sent = sendto(
+          sendingSocket[i],
+          nals[0].p_payload+alreadySent,
+          (frameSize-alreadySent) > MAX_UDP_SIZE ? MAX_UDP_SIZE : frameSize - alreadySent,
+          0,
+          (struct sockaddr *) &si_other,
+          slen);
 
-    gettimeofday(&timeSend,NULL);
+        if(sent < 0)
+        {
+          ERR("Sendto returns -1. Errno: %d",errno);
+          break;
+        }
+        else
+          alreadySent += sent;
+        
+      } while (sent != -1 && alreadySent != frameSize);
+    }
 
     DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
-    DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);
+    DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);    
+
+    gettimeofday(&timeSend,NULL);
 
 
     gettimeofday(&now,NULL);
