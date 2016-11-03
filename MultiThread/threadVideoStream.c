@@ -86,6 +86,8 @@ void *threadVideoStream(void * param)
   int i;
   int senderArraySize = cJSON_GetArraySize(config->senders);
 
+  LOG("This stream has %d senders.",senderArraySize);
+
   for(i=0;i<senderArraySize;i++)
   {
     if ((sendingSocket[i] = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
@@ -129,7 +131,7 @@ void *threadVideoStream(void * param)
     ERR("Cannot allocate picture");
     goto FAIL_ALLOC;
   }
-  ERR("Allocated picture of %d x %d",config->sizeX,config->sizeY);
+  LOG("Allocated picture of %d x %d",config->sizeX,config->sizeY);
 
   // x264_picture_alloc(&pic_in, X264_CSP_I420, width, height);
 
