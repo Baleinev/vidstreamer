@@ -101,7 +101,7 @@ void *threadVideoStream(void * param)
       ERR("Cannot setsockopt. Non-fatal, but the latency will suffer if the UDP send buffer is too big.");
     }
 
-    if(setsockopt(sendingSocket, SOL_SOCKET, SO_BINDTODEVICE, config->senders[i].interface, strlen(config->senders[i].interface)) < 0)
+    if(setsockopt(sendingSocket[i], SOL_SOCKET, SO_BINDTODEVICE, config->senders[i].interface, strlen(config->senders[i].interface)) < 0)
     {
       ERR("Cannot bind to selected interface: %s",config->senders[i].interface);
       goto FAIL_SOCKET_INTERFACE;
