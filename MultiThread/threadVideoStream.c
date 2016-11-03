@@ -70,7 +70,7 @@ void *threadVideoStream(void * param)
 
   struct sockaddr_in si_other[MAX_SENDING_SOCKETS];
   int sendingSocket[MAX_SENDING_SOCKETS];
-  int slen = sizeof(si_other);
+  int slen = sizeof(si_other[0]);
 
   if(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &(config->affinity)) != 0)
   {
