@@ -194,10 +194,10 @@ int main(int argc,char *argv[])
 
   pthread_create(&grabber,NULL,&threadPollScreen,(void *)&(globalConfig.grabber));
 
-  // for(i=0;i < globalConfig.grabber.nbStreamers;i++) 
-  // {
-  //   pthread_create(&(streamers[i]),NULL,&threadVideoStream,(void *)&(globalConfig.streamers[i]));  
-  // }
+  for(i=0;i < globalConfig.grabber.nbStreamers;i++) 
+  {
+    pthread_create(&(streamers[i]),NULL,&threadVideoStream,(void *)&(globalConfig.streamers[i]));  
+  }
 
   /*
    * Configure the terminal so any key press will be processed imediately (without the need of a return)
@@ -207,18 +207,16 @@ int main(int argc,char *argv[])
   // newt.c_lflag &= ~(ICANON);          
   // tcsetattr( STDIN_FILENO, TCSANOW, &newt);
 
-  LOG("Press any key to quit");
+  // LOG("Press any key to quit");
 
-  usleep(10000);
-
-  getchar();
+  // getchar();
 
   // tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
 
-  flagQuit = true;
+  // flagQuit = true;
 
-  pthread_cond_broadcast(&condDataConsummed);
-  pthread_cond_broadcast(&condDataAvailable);
+  // pthread_cond_broadcast(&condDataConsummed);
+  // pthread_cond_broadcast(&condDataAvailable);
 
   for(i=0;i< globalConfig.grabber.nbStreamers;i++)
     pthread_join(streamers[i],NULL);
