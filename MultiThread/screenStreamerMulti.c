@@ -209,6 +209,8 @@ int main(int argc,char *argv[])
 
   LOG("Press any key to quit");
 
+  usleep(10000);
+
   getchar();
 
   // tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
