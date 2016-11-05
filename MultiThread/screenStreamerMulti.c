@@ -202,16 +202,16 @@ int main(int argc,char *argv[])
   /*
    * Configure the terminal so any key press will be processed imediately (without the need of a return)
    */
-  tcgetattr( STDIN_FILENO, &oldt);
-  newt = oldt;
-  newt.c_lflag &= ~(ICANON);          
-  tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+  // tcgetattr( STDIN_FILENO, &oldt);
+  // newt = oldt;
+  // newt.c_lflag &= ~(ICANON);          
+  // tcsetattr( STDIN_FILENO, TCSANOW, &newt);
 
   LOG("Press any key to quit");
 
   getchar();
 
-  tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
+  // tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
 
   flagQuit = true;
 
