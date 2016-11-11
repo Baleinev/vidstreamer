@@ -50,7 +50,7 @@ extern pthread_mutex_t mutexCapturedFrame;
 
 void *threadPollScreen(void * param)
 {
-  int frameId = 0;
+  int logI = 0;
   Display *dpy;
   XImage *image;
   XWindowAttributes xwAttr;  
@@ -161,7 +161,7 @@ void *threadPollScreen(void * param)
 
     gettimeofday(&timeGrab,NULL);
 
-    if(frameId%LOG_INTERVAL == 0)
+    if(logI%LOG_INTERVAL == 0)
       DBG("Time XShmGetImage: %ld ms",(timeGrab.tv_sec-now.tv_sec)*1000+(timeGrab.tv_usec-now.tv_usec)/1000);
 
     /* 
@@ -188,19 +188,19 @@ void *threadPollScreen(void * param)
 
     gettimeofday(&timeWait,NULL);
     
-    if(frameId%LOG_INTERVAL == 0)
+    if(logI%LOG_INTERVAL == 0)
       DBG("Time waiting: %ld ms",(timeWait.tv_sec-timeGrab.tv_sec)*1000+(timeWait.tv_usec-timeGrab.tv_usec)/1000);
 
     gettimeofday(&now,NULL);
 
     double delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
     
-    if(frameId%LOG_INTERVAL == 0)
+    if(logI%LOG_INTERVAL == 0)
       DBG("Delta: %f",delta);
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
-      if(frameId%LOG_INTERVAL == 0)      
+      if(logI%LOG_INTERVAL == 0)      
         DBG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
 
       usleep((unsigned int)((1000/config->hardFpsLimiter - delta)*1000));
@@ -211,7 +211,7 @@ void *threadPollScreen(void * param)
     last.tv_usec = now.tv_usec;
     last.tv_sec = now.tv_sec;  
 
-    frameId++;
+    logI++;
   }
 
 
