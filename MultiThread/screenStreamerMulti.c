@@ -229,7 +229,7 @@ int main(int argc,char *argv[])
 
     if(threadPollScreenQuitting || threadVideoStreamQuitting)
     {
-      ERR("Exiting");      
+      LOG("Exiting from loop");      
       break;
     }
   }
@@ -241,21 +241,24 @@ int main(int argc,char *argv[])
   pthread_cond_broadcast(&condDataConsummed);
   pthread_mutex_unlock(&mutexCapturedFrame);
 
-  ERR("Joining grabber...");
+  LOG("Joining grabber...");
   pthread_join(grabber,NULL);
 
   pthread_cond_broadcast(&condDataAvailable);
 
-  ERR("Joining streamers...");
+  LOG("Joining streamers...");
   for(i=0;i< globalConfig.grabber.nbStreamers;i++)
     pthread_join(streamers[i],NULL);
 
-  ERR("Freeing senders...");
+  LOG("Freeing senders...");
   for(i=0;i<globalConfig.grabber.nbStreamers;i++)
     free(globalConfig.streamers[i].senders);
 
-  ERR("Freeing streamers...");
+  LOG("Freeing streamers...");
   free(globalConfig.streamers);
+
+
+  LOG("Exiting now");
 
   FAIL_MALLOCCONFIG:
   FAIL_NBENCODERS:
