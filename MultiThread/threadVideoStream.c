@@ -47,7 +47,7 @@ extern pthread_mutex_t mutexCapturedFrame;
 
 void *threadVideoStream(void * param)
 {
-  // int frameId = 0;
+  int logI = 0;
 
   struct streamerConfig_t *config = (struct streamerConfig_t *)param;
 
@@ -172,12 +172,7 @@ void *threadVideoStream(void * param)
        * Wait for new data to be available
        */
       while(!flagQuit && frameId <= curFrameId)
-      {
-        // if(frameId%LOG_INTERVAL == 0)
-        //   DBG("Waiting");
-        
         pthread_cond_wait(&condDataAvailable,&mutexCapturedFrame);
-      }
  
     pthread_mutex_unlock(&mutexCapturedFrame);
 
@@ -186,7 +181,7 @@ void *threadVideoStream(void * param)
 
     gettimeofday(&timeWait,NULL);
 
-    if(frameId%LOG_INTERVAL == 0)
+    if(logI%LOG_INTERVAL == 0)
       DBG("Time waiting: %ld ms",(timeWait.tv_sec-now.tv_sec)*1000+(timeWait.tv_usec-now.tv_usec)/1000);
 
     if(croppedFrame == NULL)
@@ -218,7 +213,7 @@ void *threadVideoStream(void * param)
 
     gettimeofday(&timeMemcpy,NULL);
 
-    if(frameId%LOG_INTERVAL == 0)    
+    if(logI%LOG_INTERVAL == 0)    
      DBG("Time memcopying: %ld ms",(timeMemcpy.tv_sec-timeWait.tv_sec)*1000+(timeMemcpy.tv_usec-timeWait.tv_usec)/1000);
 
     pthread_mutex_lock(&mutexCapturedFrame);
@@ -240,7 +235,7 @@ void *threadVideoStream(void * param)
      */
     gettimeofday(&timeScaling,NULL);
 
-    if(frameId%LOG_INTERVAL == 0)        
+    if(logI%LOG_INTERVAL == 0)        
       DBG("Time scaling: %ld ms",(timeScaling.tv_sec-timeWait.tv_sec)*1000+(timeScaling.tv_usec-timeWait.tv_usec)/1000);    
     
     pic_in.i_pts = curFrameId;
@@ -289,7 +284,7 @@ void *threadVideoStream(void * param)
     }
     gettimeofday(&timeSend,NULL);
 
-    if(frameId%LOG_INTERVAL == 0)        
+    if(logI%LOG_INTERVAL == 0)        
     {
       DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
       DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);    
@@ -303,7 +298,7 @@ void *threadVideoStream(void * param)
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
-      if(frameId%LOG_INTERVAL == 0)        
+      if(logI%LOG_INTERVAL == 0)        
         DBG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
       
       usleep((unsigned int)((1000/config->hardFpsLimiter - delta)*1000));
@@ -318,7 +313,8 @@ void *threadVideoStream(void * param)
 
     // DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
 
-    // frameId++;
+    logI++;
+
 
   }
   LOG("Exiting normally");
