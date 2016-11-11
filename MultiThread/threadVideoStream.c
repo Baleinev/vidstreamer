@@ -321,6 +321,7 @@ void *threadVideoStream(void * param)
     close(sendingSocket[i]);
   
   FAIL_SOCKET:
+  LOG("Exiting");
 
   return NULL;
 }

@@ -229,7 +229,7 @@ void *threadPollScreen(void * param)
     XCloseDisplay(dpy);
   FAIL_XOPENDISPLAY:
 
-  LOG("Exiting now");
+  LOG("Exiting");
 
   return NULL;
 }
