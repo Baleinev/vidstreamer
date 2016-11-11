@@ -43,12 +43,8 @@ extern pthread_cond_t condDataConsummed;
 
 extern pthread_mutex_t mutexCapturedFrame;
 
-#define LOG_INTERVAL 100
-
 void *threadVideoStream(void * param)
 {
-  int logI = 0;
-
   struct streamerConfig_t *config = (struct streamerConfig_t *)param;
 
   unsigned int curFrameId = 0;
@@ -180,11 +176,7 @@ void *threadVideoStream(void * param)
       break;
 
     gettimeofday(&timeWait,NULL);
-
-    if(logI%LOG_INTERVAL == 0)
-    {
-      DBG("Time waiting: %ld ms",(timeWait.tv_sec-now.tv_sec)*1000+(timeWait.tv_usec-now.tv_usec)/1000);
-    }
+    DBG("Time waiting: %ld ms",(timeWait.tv_sec-now.tv_sec)*1000+(timeWait.tv_usec-now.tv_usec)/1000);
 
     if(croppedFrame == NULL)
     {
@@ -214,14 +206,11 @@ void *threadVideoStream(void * param)
     curFrameId = frameId;
 
     gettimeofday(&timeMemcpy,NULL);
-
-    if(logI%LOG_INTERVAL == 0)
-    {
-     DBG("Time memcopying: %ld ms",(timeMemcpy.tv_sec-timeWait.tv_sec)*1000+(timeMemcpy.tv_usec-timeWait.tv_usec)/1000);
-    }
+    DBG("Time memcopying: %ld ms",(timeMemcpy.tv_sec-timeWait.tv_sec)*1000+(timeMemcpy.tv_usec-timeWait.tv_usec)/1000);
 
     pthread_mutex_lock(&mutexCapturedFrame);
     memcopyDone++;
+    DBG("memcopyDone++");
 
     pthread_cond_broadcast(&condDataConsummed);
     pthread_cond_broadcast(&condDataAvailable);
@@ -238,12 +227,7 @@ void *threadVideoStream(void * param)
      * Add an incrementing dummy timestamp to the frame
      */
     gettimeofday(&timeScaling,NULL);
-
-    if(logI%LOG_INTERVAL == 0)
-    {  
-      DBG("Time scaling: %ld ms",(timeScaling.tv_sec-timeWait.tv_sec)*1000+(timeScaling.tv_usec-timeWait.tv_usec)/1000);    
-    }
-
+    DBG("Time scaling: %ld ms",(timeScaling.tv_sec-timeWait.tv_sec)*1000+(timeScaling.tv_usec-timeWait.tv_usec)/1000);    
     pic_in.i_pts = curFrameId;
 
 
@@ -254,11 +238,8 @@ void *threadVideoStream(void * param)
     }
 
     gettimeofday(&timeEncoding,NULL);
+    DBG("Time encoding: %ld ms",(timeEncoding.tv_sec-timeMemcpy.tv_sec)*1000+(timeEncoding.tv_usec-timeMemcpy.tv_usec)/1000);
 
-    if(logI%LOG_INTERVAL == 0)
-    {  
-      DBG("Time encoding: %ld ms",(timeEncoding.tv_sec-timeMemcpy.tv_sec)*1000+(timeEncoding.tv_usec-timeMemcpy.tv_usec)/1000);
-    }
     /*
      * Set manually IDR header for intra refresh?
      */
@@ -291,13 +272,11 @@ void *threadVideoStream(void * param)
       } while (sent != -1 && alreadySent != frameSize);
       // LOG("Sent to %s",config->senders[i].ip)
     }
-    gettimeofday(&timeSend,NULL);
 
-    if(logI%LOG_INTERVAL == 0)        
-    {
-      DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
-      DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);    
-    }
+    DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
+    DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);    
+
+    gettimeofday(&timeSend,NULL);
 
     gettimeofday(&now,NULL);
 
@@ -307,10 +286,7 @@ void *threadVideoStream(void * param)
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
-      if(logI%LOG_INTERVAL == 0)
-      {     
-        DBG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
-      }
+      DBG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
       usleep((unsigned int)((1000/config->hardFpsLimiter - delta)*1000));
     }
     
@@ -323,7 +299,6 @@ void *threadVideoStream(void * param)
 
     // DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
 
-    logI++;
 
 
   }
