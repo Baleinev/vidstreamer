@@ -173,8 +173,8 @@ void *threadVideoStream(void * param)
        */
       while(!flagQuit && frameId <= curFrameId)
       {
-        if(frameId%LOG_INTERVAL == 0)
-          DBG("Waiting");
+        // if(frameId%LOG_INTERVAL == 0)
+        //   DBG("Waiting");
         
         pthread_cond_wait(&condDataAvailable,&mutexCapturedFrame);
       }
