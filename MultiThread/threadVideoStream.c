@@ -47,7 +47,7 @@ extern pthread_mutex_t mutexCapturedFrame;
 
 void *threadVideoStream(void * param)
 {
-  int frameId = 0;
+  // int frameId = 0;
 
   struct streamerConfig_t *config = (struct streamerConfig_t *)param;
 
@@ -318,7 +318,7 @@ void *threadVideoStream(void * param)
 
     // DBG("Time total: %ld s %ld ms",(now.tv_sec-last.tv_sec),(now.tv_usec-last.tv_usec));
 
-    frameId++;
+    // frameId++;
 
   }
   LOG("Exiting normally");
