@@ -182,7 +182,9 @@ void *threadVideoStream(void * param)
     gettimeofday(&timeWait,NULL);
 
     if(logI%LOG_INTERVAL == 0)
+    {
       DBG("Time waiting: %ld ms",(timeWait.tv_sec-now.tv_sec)*1000+(timeWait.tv_usec-now.tv_usec)/1000);
+    }
 
     if(croppedFrame == NULL)
     {
@@ -213,8 +215,10 @@ void *threadVideoStream(void * param)
 
     gettimeofday(&timeMemcpy,NULL);
 
-    if(logI%LOG_INTERVAL == 0)    
+    if(logI%LOG_INTERVAL == 0)
+    {
      DBG("Time memcopying: %ld ms",(timeMemcpy.tv_sec-timeWait.tv_sec)*1000+(timeMemcpy.tv_usec-timeWait.tv_usec)/1000);
+    }
 
     pthread_mutex_lock(&mutexCapturedFrame);
     memcopyDone++;
@@ -235,9 +239,11 @@ void *threadVideoStream(void * param)
      */
     gettimeofday(&timeScaling,NULL);
 
-    if(logI%LOG_INTERVAL == 0)        
+    if(logI%LOG_INTERVAL == 0)
+    {  
       DBG("Time scaling: %ld ms",(timeScaling.tv_sec-timeWait.tv_sec)*1000+(timeScaling.tv_usec-timeWait.tv_usec)/1000);    
-    
+    }
+
     pic_in.i_pts = curFrameId;
 
 
@@ -248,8 +254,11 @@ void *threadVideoStream(void * param)
     }
 
     gettimeofday(&timeEncoding,NULL);
-    DBG("Time encoding: %ld ms",(timeEncoding.tv_sec-timeMemcpy.tv_sec)*1000+(timeEncoding.tv_usec-timeMemcpy.tv_usec)/1000);
 
+    if(logI%LOG_INTERVAL == 0)
+    {  
+      DBG("Time encoding: %ld ms",(timeEncoding.tv_sec-timeMemcpy.tv_sec)*1000+(timeEncoding.tv_usec-timeMemcpy.tv_usec)/1000);
+    }
     /*
      * Set manually IDR header for intra refresh?
      */
@@ -298,9 +307,10 @@ void *threadVideoStream(void * param)
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
-      if(logI%LOG_INTERVAL == 0)        
+      if(logI%LOG_INTERVAL == 0)
+      {     
         DBG("Sleeping %d ms",(unsigned int)(1000/config->hardFpsLimiter - delta));      
-      
+      }
       usleep((unsigned int)((1000/config->hardFpsLimiter - delta)*1000));
     }
     
