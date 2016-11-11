@@ -7,6 +7,8 @@
 #include <termios.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <signal.h>
 #include <jpeglib.h>
 
 #include <sys/syscall.h>
@@ -78,6 +80,13 @@ int gettid()
   return syscall(SYS_gettid);
 }
 
+void termHandler(int signo)
+{
+  LOG("Received TERM signal");
+  flagQuit = true;  
+}
+
+
 dumpRGBAjpeg(unsigned char *data,unsigned int width,unsigned int height,const char *name)
 {
   FILE *outfile;
@@ -130,6 +139,18 @@ int main(int argc,char *argv[])
 
   // while ((c = getopt (argc, argv, "iaswkn:d::f::")) != -1)
   
+  struct sigaction sigIntHandler;
+
+  sigIntHandler.sa_handler = termHandler;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+
+  if(sigaction(SIGINT, &sigIntHandler, NULL) != 0)
+    ERR("Cannot set SIGINT sigaction. errno:%d",errno);
+
+  if(sigaction(SIGTERM, &sigIntHandler, NULL) != 0)
+    ERR("Cannot set SIGTERM sigaction. errno:%d",errno);  
+
   while ((c = getopt (argc, argv, "d:c:")) != -1)
   {
     switch (c)
@@ -223,7 +244,7 @@ int main(int argc,char *argv[])
   // 
   LOG("Waiting for threads");
 
-  while(true)
+  while(!flagQuit)
   {
     usleep(100000);
 
