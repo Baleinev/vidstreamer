@@ -295,7 +295,7 @@ void *threadVideoStream(void * param)
 
     if(logI%LOG_INTERVAL == 0)        
     {
-      DBG("Time sending: %ld ms",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000);
+      DBG("Time sending: %ld ms, %ld kbytes",(timeSend.tv_sec-timeEncoding.tv_sec)*1000+(timeSend.tv_usec-timeEncoding.tv_usec)/1000,frameSize/1000);
       DBG("Time total: %ld ms",(timeSend.tv_sec-now.tv_sec)*1000+(timeSend.tv_usec-now.tv_usec)/1000);    
     }
 
@@ -303,7 +303,10 @@ void *threadVideoStream(void * param)
 
     double delta = (now.tv_sec-last.tv_sec)*1000+(now.tv_usec-last.tv_usec)/1000;
 
-    DBG("Delta: %f",delta);
+    if(logI%LOG_INTERVAL == 0)        
+    {
+      DBG("Delta: %f",delta);
+    }
 
     if(config->hardFpsLimiter > 0 && delta < 1000/config->hardFpsLimiter)
     {
