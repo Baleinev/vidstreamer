@@ -236,10 +236,12 @@ int main(int argc,char *argv[])
   pthread_cond_broadcast(&condDataConsummed);
   pthread_mutex_unlock(&mutexCapturedFrame);
 
+  ERR("Joining grabber...");
   pthread_join(grabber,NULL);
 
   pthread_cond_broadcast(&condDataAvailable);
 
+  ERR("Joining streamers...");
   for(i=0;i< globalConfig.grabber.nbStreamers;i++)
     pthread_join(streamers[i],NULL);
 
