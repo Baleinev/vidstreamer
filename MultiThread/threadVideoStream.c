@@ -302,7 +302,6 @@ void *threadVideoStream(void * param)
 
 
   }
-  threadVideoStreamQuitting = true;
   LOG("Exiting normally");
 
     free(croppedFrame);
@@ -322,6 +321,7 @@ void *threadVideoStream(void * param)
   
   FAIL_SOCKET:
   LOG("Exiting");
+  threadVideoStreamQuitting = true;
 
   return NULL;
 }

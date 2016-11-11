@@ -203,7 +203,6 @@ void *threadPollScreen(void * param)
     last.tv_sec = now.tv_sec;  
   }
 
-  threadPollScreenQuitting = true;
 
   LOG("Exiting normally");
 
@@ -230,6 +229,8 @@ void *threadPollScreen(void * param)
   FAIL_XOPENDISPLAY:
 
   LOG("Exiting");
+
+  threadPollScreenQuitting = true;  
 
   return NULL;
 }
