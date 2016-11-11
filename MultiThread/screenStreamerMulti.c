@@ -222,7 +222,7 @@ int main(int argc,char *argv[])
   // pthread_cond_broadcast(&condDataAvailable);
   // 
   LOG("Waiting for threads");
-         
+
   while(true)
   {
     usleep(100000);
@@ -250,10 +250,11 @@ int main(int argc,char *argv[])
   for(i=0;i< globalConfig.grabber.nbStreamers;i++)
     pthread_join(streamers[i],NULL);
 
+  ERR("Freeing senders...");
   for(i=0;i<globalConfig.grabber.nbStreamers;i++)
-    for(j=0;j<globalConfig.streamers[i].nbSenders;j++)
-      free(globalConfig.streamers[i].senders);
+    free(globalConfig.streamers[i].senders);
 
+  ERR("Freeing streamers...");
   free(globalConfig.streamers);
 
   FAIL_MALLOCCONFIG:
