@@ -14,7 +14,7 @@
 #define KRED  "\x1B[31m"
 #define KNRM  "\x1B[0m"
 
-#define DBG(fmt,...) do{/*fprintf(stdout,"[%s][%s][%d]",__FILE__,__FUNCTION__,__LINE__);fprintf(stdout,fmt,##__VA_ARGS__);fprintf(stdout,"\n");fflush(stdout);*/}while(0);
+#define DBG(fmt,...) do{fprintf(stdout,"[%s][%s][%d]",__FILE__,__FUNCTION__,__LINE__);fprintf(stdout,fmt,##__VA_ARGS__);fprintf(stdout,"\n");fflush(stdout);}while(0);
 #define ERR(fmt,...) do{fprintf(stderr,"%s[%s][%s][%d][ERROR]",KRED,__FILE__,__FUNCTION__,__LINE__);fprintf(stderr,fmt,##__VA_ARGS__);fprintf(stderr,"%s\n",KNRM);fflush(stderr);}while(0);
 #define LOG(fmt,...) do{fprintf(stdout,"[%s][%s][%d]",__FILE__,__FUNCTION__,__LINE__);fprintf(stdout,fmt,##__VA_ARGS__);fprintf(stdout,"\n");fflush(stdout);}while(0);
 
