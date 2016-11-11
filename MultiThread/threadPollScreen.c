@@ -25,7 +25,7 @@ extern unsigned int screenHeight;
 extern unsigned int bytesPerPixelSrc;
 extern unsigned int bytesPerLineSrc;
 
-
+extern bool threadPollScreenQuitting;
 // extern unsigned int fps;
 
 extern char displayName[128];
@@ -152,14 +152,7 @@ void *threadPollScreen(void * param)
 
     if(XShmGetImage(dpy, root, image, xOffset, yOffset, AllPlanes) == False)
     {
-      pthread_mutex_lock(&mutexCapturedFrame);
-
       ERR("XShmGetImage failed: False");
-      flagQuit = true;      
-      pthread_cond_broadcast(&condDataAvailable);      
-
-      pthread_mutex_unlock(&mutexCapturedFrame);
-
       goto FAIL_XSHMGETIMAGE;
     }
 
@@ -179,14 +172,7 @@ void *threadPollScreen(void * param)
       pthread_cond_broadcast(&condDataAvailable);
 
       while(config->waitForAll && !flagQuit && memcopyDone != config->nbStreamers)
-      {
         pthread_cond_wait(&condDataConsummed,&mutexCapturedFrame);
-        if(flagQuit)
-        {
-          pthread_mutex_unlock(&mutexCapturedFrame);          
-          break;        
-        }
-      }
       
       memcopyDone = 0;
 
@@ -216,6 +202,8 @@ void *threadPollScreen(void * param)
     last.tv_usec = now.tv_usec;
     last.tv_sec = now.tv_sec;  
   }
+
+  threadPollScreenQuitting = true;
 
   LOG("Exiting normally");
 

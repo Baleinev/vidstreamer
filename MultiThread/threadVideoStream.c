@@ -21,6 +21,8 @@
 
 #define MAX_SENDING_SOCKETS 16
 
+extern threadVideoStreamQuitting;
+
 extern unsigned int screenWidth;
 extern unsigned int screenHeight;
 
@@ -166,19 +168,12 @@ void *threadVideoStream(void * param)
        * Wait for new data to be available
        */
       while(!flagQuit && frameId <= curFrameId)
-      {
         pthread_cond_wait(&condDataAvailable,&mutexCapturedFrame);
-        
-        if(flagQuit)
-        {
-          pthread_mutex_unlock(&mutexCapturedFrame);          
-          break;        
-        }
-      }
  
     pthread_mutex_unlock(&mutexCapturedFrame);
 
-
+    if(flagQuit)
+      break;
 
     gettimeofday(&timeWait,NULL);
     DBG("Time waiting: %ld ms",(timeWait.tv_sec-now.tv_sec)*1000+(timeWait.tv_usec-now.tv_usec)/1000);
@@ -238,15 +233,8 @@ void *threadVideoStream(void * param)
 
     if ((frameSize = x264_encoder_encode(encoder, &nals, &i_nals, &pic_in, &pic_out)) < 0)
     {
-      pthread_mutex_lock(&mutexCapturedFrame);
-
       ERR("Frame size with pts %ld: errno: %d",pic_in.i_pts,frameSize);
-      flagQuit = true;
-
-      pthread_cond_broadcast(&condDataConsummed);
-
-      pthread_mutex_unlock(&mutexCapturedFrame);
-      break;      
+      continue;
     }
 
     gettimeofday(&timeEncoding,NULL);
@@ -314,6 +302,7 @@ void *threadVideoStream(void * param)
 
 
   }
+  threadVideoStreamQuitting = true;
   LOG("Exiting normally");
 
     free(croppedFrame);
@@ -328,7 +317,9 @@ void *threadVideoStream(void * param)
   FAIL_INET_ATON:
   FAIL_SOCKET_INTERFACE:
 
-    close(sendingSocket);
+  for(i=0;i<senderArraySize;i++)
+    close(sendingSocket[i]);
+  
   FAIL_SOCKET:
 
   return NULL;

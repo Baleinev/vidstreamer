@@ -30,6 +30,9 @@ unsigned int bytesPerLineSrc;
 
 bool flagQuit = false; 
 
+bool threadVideoStreamQuitting = false;
+bool threadPollScreenQuitting = false;
+
 globalConfig_t globalConfig;
 
 // bool flagAffinity = false;
@@ -217,16 +220,32 @@ int main(int argc,char *argv[])
 
   // pthread_cond_broadcast(&condDataConsummed);
   // pthread_cond_broadcast(&condDataAvailable);
+  // 
+  while(true)
+  {
+    usleep(100000);
+
+    if(threadPollScreenQuitting || threadVideoStreamQuitting)
+      break;
+  }
+
+  pthread_mutex_lock(&mutexCapturedFrame);
+
+  flagQuit = true;
+
+  pthread_cond_broadcast(&condDataConsummed);
+  pthread_mutex_unlock(&mutexCapturedFrame);
+
+  pthread_join(grabber,NULL);
+
+  pthread_cond_broadcast(&condDataAvailable);
 
   for(i=0;i< globalConfig.grabber.nbStreamers;i++)
     pthread_join(streamers[i],NULL);
 
   for(i=0;i<globalConfig.grabber.nbStreamers;i++)
-  {
     for(j=0;j<globalConfig.streamers[i].nbSenders;j++)
       free(globalConfig.streamers[i].senders);
-
-  }
 
   free(globalConfig.streamers);
 
