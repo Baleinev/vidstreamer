@@ -152,7 +152,14 @@ void *threadPollScreen(void * param)
 
     if(XShmGetImage(dpy, root, image, xOffset, yOffset, AllPlanes) == False)
     {
+      pthread_mutex_lock(&mutexCapturedFrame);
+
       ERR("XShmGetImage failed: False");
+      flagQuit = true;      
+      pthread_cond_broadcast(&condDataAvailable);      
+
+      pthread_mutex_unlock(&mutexCapturedFrame);
+
       goto FAIL_XSHMGETIMAGE;
     }
 
@@ -172,7 +179,14 @@ void *threadPollScreen(void * param)
       pthread_cond_broadcast(&condDataAvailable);
 
       while(config->waitForAll && !flagQuit && memcopyDone != config->nbStreamers)
+      {
         pthread_cond_wait(&condDataConsummed,&mutexCapturedFrame);
+        if(flagQuit)
+        {
+          pthread_mutex_unlock(&mutexCapturedFrame);          
+          break;        
+        }
+      }
       
       memcopyDone = 0;
 

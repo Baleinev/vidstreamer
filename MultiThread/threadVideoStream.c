@@ -166,12 +166,19 @@ void *threadVideoStream(void * param)
        * Wait for new data to be available
        */
       while(!flagQuit && frameId <= curFrameId)
+      {
         pthread_cond_wait(&condDataAvailable,&mutexCapturedFrame);
+        
+        if(flagQuit)
+        {
+          pthread_mutex_unlock(&mutexCapturedFrame);          
+          break;        
+        }
+      }
  
     pthread_mutex_unlock(&mutexCapturedFrame);
 
-    if(flagQuit)
-      break;
+
 
     gettimeofday(&timeWait,NULL);
     DBG("Time waiting: %ld ms",(timeWait.tv_sec-now.tv_sec)*1000+(timeWait.tv_usec-now.tv_usec)/1000);
@@ -231,8 +238,15 @@ void *threadVideoStream(void * param)
 
     if ((frameSize = x264_encoder_encode(encoder, &nals, &i_nals, &pic_in, &pic_out)) < 0)
     {
+      pthread_mutex_lock(&mutexCapturedFrame);
+
       ERR("Frame size with pts %ld: errno: %d",pic_in.i_pts,frameSize);
-      continue;
+      flagQuit = true;
+
+      pthread_cond_broadcast(&condDataConsummed);
+
+      pthread_mutex_unlock(&mutexCapturedFrame);
+      break;      
     }
 
     gettimeofday(&timeEncoding,NULL);
