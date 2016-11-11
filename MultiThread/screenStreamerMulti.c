@@ -221,6 +221,8 @@ int main(int argc,char *argv[])
   // pthread_cond_broadcast(&condDataConsummed);
   // pthread_cond_broadcast(&condDataAvailable);
   // 
+  LOG("Waiting for threads");
+         
   while(true)
   {
     usleep(100000);

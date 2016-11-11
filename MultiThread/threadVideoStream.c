@@ -21,7 +21,7 @@
 
 #define MAX_SENDING_SOCKETS 16
 
-extern threadVideoStreamQuitting;
+extern bool threadVideoStreamQuitting;
 
 extern unsigned int screenWidth;
 extern unsigned int screenHeight;
