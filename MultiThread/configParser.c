@@ -162,7 +162,7 @@ static bool updateConfig(cJSON *parent, const char *attribute, void *structData,
   
   if(child == NULL)
   {
-    ERR("Cannot update attribute %s",attribute);
+    LOG("Cannot update attribute %s",attribute);
     return false;
   }
 
@@ -187,7 +187,7 @@ static bool updateConfig(cJSON *parent, const char *attribute, void *structData,
       *((bool *)structData) = (bool)child->valueint;
     break;
     default:
-      ERR("Unknown data type");
+      LOG("Unknown data type");
       return false;
     break;
   }
