@@ -172,7 +172,12 @@ void *threadVideoStream(void * param)
        * Wait for new data to be available
        */
       while(!flagQuit && frameId <= curFrameId)
+      {
+        if(frameId%LOG_INTERVAL == 0)
+          DBG("Waiting");
+        
         pthread_cond_wait(&condDataAvailable,&mutexCapturedFrame);
+      }
  
     pthread_mutex_unlock(&mutexCapturedFrame);
 
