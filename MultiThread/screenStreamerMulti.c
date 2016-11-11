@@ -226,7 +226,10 @@ int main(int argc,char *argv[])
     usleep(100000);
 
     if(threadPollScreenQuitting || threadVideoStreamQuitting)
+    {
+      ERR("Exiting");      
       break;
+    }
   }
 
   pthread_mutex_lock(&mutexCapturedFrame);
